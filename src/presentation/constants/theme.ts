@@ -35,6 +35,10 @@ export const OttoColors = {
   buttonFilled: '#e0e2df',
   buttonFilledDisabled: '#eaebea',
   buttonFilledText: '#0a0b0a',
+  primary: '#49dc14',
+  stepInactive: '#1c1d1b',
+  error: '#f04438',
+  errorSoft: '#f97066',
 } as const;
 
 export const OttoFonts = {

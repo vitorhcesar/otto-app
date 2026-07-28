@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -24,6 +25,7 @@ function isValidEmail(value: string) {
 }
 
 export function LoginEmailPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const canContinue = isValidEmail(email);
 
@@ -65,7 +67,10 @@ export function LoginEmailPage() {
                 variant="filled"
                 disabled={!canContinue}
                 onPress={() => {
-                  // Backend wiring comes later
+                  router.push({
+                    pathname: '/login-email-whatsapp',
+                    params: { email: email.trim() },
+                  });
                 }}
               />
             </View>

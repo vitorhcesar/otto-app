@@ -13,6 +13,7 @@ import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
 export type TextFieldProps = TextInputProps & {
   label: string;
+  error?: string;
   containerStyle?: StyleProp<ViewStyle>;
 };
 
@@ -20,6 +21,7 @@ export function TextField({
   label,
   value,
   placeholder,
+  error,
   containerStyle,
   onFocus,
   onBlur,
@@ -30,13 +32,16 @@ export function TextField({
   const [focused, setFocused] = useState(false);
   const hasValue = Boolean(value && String(value).length > 0);
   const showFloatingLabel = focused || hasValue;
+  const hasError = Boolean(error);
 
   return (
     <View style={[styles.container, containerStyle]}>
       {showFloatingLabel ? (
         <View style={styles.labelRow} pointerEvents="none">
           <View style={styles.labelBackground}>
-            <Text style={styles.floatingLabel}>{label}</Text>
+            <Text style={[styles.floatingLabel, hasError && styles.floatingLabelError]}>
+              {label}
+            </Text>
           </View>
         </View>
       ) : null}
@@ -45,6 +50,7 @@ export function TextField({
         style={[
           styles.inputShell,
           showFloatingLabel ? styles.inputShellActive : styles.inputShellIdle,
+          hasError && styles.inputShellError,
         ]}>
         <TextInput
           value={value}
@@ -62,6 +68,8 @@ export function TextField({
           {...rest}
         />
       </View>
+
+      {hasError ? <Text style={styles.errorHint}>{error}</Text> : null}
     </View>
   );
 }
@@ -70,6 +78,7 @@ const styles = StyleSheet.create({
   container: {
     alignSelf: 'stretch',
     position: 'relative',
+    gap: 10,
   },
   labelRow: {
     position: 'absolute',
@@ -85,6 +94,9 @@ const styles = StyleSheet.create({
     ...OttoTypography.captionSmall,
     color: OttoColors.text,
   },
+  floatingLabelError: {
+    color: OttoColors.errorSoft,
+  },
   inputShell: {
     borderWidth: 1,
     borderRadius: 8,
@@ -99,10 +111,17 @@ const styles = StyleSheet.create({
   inputShellActive: {
     borderColor: OttoColors.borderStrong,
   },
+  inputShellError: {
+    borderColor: OttoColors.error,
+  },
   input: {
     ...OttoTypography.body,
     color: OttoColors.text,
     padding: 0,
     margin: 0,
+  },
+  errorHint: {
+    ...OttoTypography.caption,
+    color: OttoColors.errorSoft,
   },
 });
