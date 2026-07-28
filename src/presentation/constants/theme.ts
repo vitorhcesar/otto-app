@@ -24,6 +24,47 @@ export const Colors = {
   },
 } as const;
 
+/** Design tokens from Otto Figma (Autenticação) */
+export const OttoColors = {
+  background: '#0a0b0a',
+  text: '#f5f5f4',
+  textSoft: '#767d73',
+  textDisabled: '#a5a9a2',
+  borderSoft: '#1c1d1b',
+  borderStrong: '#2d302c',
+  buttonFilled: '#e0e2df',
+  buttonFilledDisabled: '#eaebea',
+  buttonFilledText: '#0a0b0a',
+} as const;
+
+export const OttoFonts = {
+  regular: 'Poppins_400Regular',
+  semiBold: 'Poppins_600SemiBold',
+} as const;
+
+export const OttoTypography = {
+  h3: {
+    fontSize: 18,
+    lineHeight: 22,
+    fontFamily: OttoFonts.semiBold,
+  },
+  body: {
+    fontSize: 16,
+    lineHeight: 26,
+    fontFamily: OttoFonts.regular,
+  },
+  caption: {
+    fontSize: 12,
+    lineHeight: 19,
+    fontFamily: OttoFonts.regular,
+  },
+  captionSmall: {
+    fontSize: 10,
+    lineHeight: 16,
+    fontFamily: OttoFonts.regular,
+  },
+} as const;
+
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 export const Fonts = Platform.select({

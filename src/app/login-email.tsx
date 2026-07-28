@@ -1,5 +1,5 @@
 import { LoginEmailPage } from '@/presentation/pages/LoginEmailPage';
 
-export default function HomeRoute() {
+export default function LoginEmailRoute() {
   return <LoginEmailPage />;
 }
