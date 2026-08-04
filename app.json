@@ -31,7 +31,8 @@
           "image": "./assets/images/otto-logo.png",
           "imageWidth": 76
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true,
