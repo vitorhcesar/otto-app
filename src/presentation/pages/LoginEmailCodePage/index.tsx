@@ -13,9 +13,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/presentation/components/ui/button';
+import { OtpField } from '@/presentation/components/ui/otp-field';
 import { formatBrazilPhoneDisplay } from '@/presentation/components/ui/phone-field';
 import { StepGroup } from '@/presentation/components/ui/step-group';
-import { TextField } from '@/presentation/components/ui/text-field';
 import { TimerIcon } from '@/presentation/components/ui/timer-icon';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
@@ -108,21 +108,15 @@ export function LoginEmailCodePage() {
                 <Text style={styles.phone}>{phoneDisplay || '—'}</Text>
               </View>
 
-              <TextField
-                label="Código"
-                placeholder="Código"
+              <OtpField
+                length={CODE_LENGTH}
                 value={code}
                 onChangeText={handleCodeChange}
                 error={error}
-                keyboardType="number-pad"
-                textContentType="oneTimeCode"
-                autoComplete="sms-otp"
-                maxLength={CODE_LENGTH}
-                returnKeyType="done"
               />
 
               <Button
-                label="Continuar"
+                label="Validar Código"
                 variant="filled"
                 disabled={!canContinue}
                 onPress={handleContinue}
