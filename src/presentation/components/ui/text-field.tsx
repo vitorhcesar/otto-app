@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   StyleSheet,
   Text,
@@ -15,6 +15,7 @@ export type TextFieldProps = TextInputProps & {
   label: string;
   error?: string;
   containerStyle?: StyleProp<ViewStyle>;
+  trailing?: ReactNode;
 };
 
 export function TextField({
@@ -23,6 +24,7 @@ export function TextField({
   placeholder,
   error,
   containerStyle,
+  trailing,
   onFocus,
   onBlur,
   style,
@@ -67,6 +69,7 @@ export function TextField({
           }}
           {...rest}
         />
+        {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
       </View>
 
       {hasError ? <Text style={styles.errorHint}>{error}</Text> : null}
@@ -103,7 +106,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     minHeight: 46,
-    justifyContent: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   inputShellIdle: {
     borderColor: OttoColors.borderSoft,
@@ -119,6 +124,13 @@ const styles = StyleSheet.create({
     color: OttoColors.text,
     padding: 0,
     margin: 0,
+    flex: 1,
+  },
+  trailing: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   errorHint: {
     ...OttoTypography.caption,

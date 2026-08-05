@@ -1,4 +1,5 @@
 import { Image } from 'expo-image';
+import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -11,19 +12,29 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/presentation/components/ui/button';
+import { PasswordField } from '@/presentation/components/ui/password-field';
 import { StepGroup } from '@/presentation/components/ui/step-group';
 import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
-export function LoginEmailProfilePage() {
-  const [fullName, setFullName] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [city, setCity] = useState('');
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD_LENGTH = 6;
 
+function isValidEmail(value: string) {
+  return EMAIL_PATTERN.test(value.trim());
+}
+
+export function LoginEmailProfilePage() {
+  const { email: emailParam } = useLocalSearchParams<{ email?: string }>();
+  const [email, setEmail] = useState(typeof emailParam === 'string' ? emailParam : '');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const passwordsMatch = password.length > 0 && password === confirmPassword;
   const canContinue =
-    fullName.trim().length >= 2 &&
-    displayName.trim().length >= 2 &&
-    city.trim().length >= 2;
+    isValidEmail(email) &&
+    password.length >= MIN_PASSWORD_LENGTH &&
+    passwordsMatch;
 
   return (
     <View style={styles.root}>
@@ -52,34 +63,33 @@ export function LoginEmailProfilePage() {
 
               <View style={styles.fields}>
                 <TextField
-                  label="Nome completo"
-                  placeholder="Nome completo"
-                  value={fullName}
-                  onChangeText={setFullName}
-                  autoCapitalize="words"
-                  autoComplete="name"
-                  textContentType="name"
+                  label="Digite seu E-mail"
+                  placeholder="Digite seu E-mail"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  textContentType="emailAddress"
                   returnKeyType="next"
                 />
-                <TextField
-                  label="Como quer ser chamado"
-                  placeholder="Como quer ser chamado"
-                  value={displayName}
-                  onChangeText={setDisplayName}
-                  autoCapitalize="words"
-                  autoComplete="nickname"
-                  textContentType="nickname"
+                <PasswordField
+                  label="Digite sua senha"
+                  placeholder="Digite sua senha"
+                  value={password}
+                  onChangeText={setPassword}
+                  autoComplete="new-password"
                   returnKeyType="next"
                 />
-                <TextField
-                  label="Cidade"
-                  placeholder="Cidade"
-                  value={city}
-                  onChangeText={setCity}
-                  autoCapitalize="words"
-                  autoComplete="postal-address-locality"
-                  textContentType="addressCity"
+                <PasswordField
+                  label="Confirmar senha"
+                  placeholder="Confirmar senha"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  autoComplete="new-password"
                   returnKeyType="done"
+                  defaultVisible
                 />
               </View>
 
