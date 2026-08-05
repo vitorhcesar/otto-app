@@ -43,6 +43,7 @@ export default function RootLayout() {
         <Stack.Screen name="login-email-whatsapp" />
         <Stack.Screen name="login-email-code" />
         <Stack.Screen name="login-email-profile" />
+        <Stack.Screen name="login-email-data" />
         <Stack.Screen name="explore" />
       </Stack>
     </>

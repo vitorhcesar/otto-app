@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -25,7 +25,11 @@ function isValidEmail(value: string) {
 }
 
 export function LoginEmailProfilePage() {
-  const { email: emailParam } = useLocalSearchParams<{ email?: string }>();
+  const router = useRouter();
+  const { email: emailParam, phone } = useLocalSearchParams<{
+    email?: string;
+    phone?: string;
+  }>();
   const [email, setEmail] = useState(typeof emailParam === 'string' ? emailParam : '');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,6 +39,20 @@ export function LoginEmailProfilePage() {
     isValidEmail(email) &&
     password.length >= MIN_PASSWORD_LENGTH &&
     passwordsMatch;
+
+  function handleContinue() {
+    if (!canContinue) {
+      return;
+    }
+
+    router.push({
+      pathname: '/login-email-data',
+      params: {
+        email: email.trim(),
+        phone: typeof phone === 'string' ? phone : '',
+      },
+    });
+  }
 
   return (
     <View style={styles.root}>
@@ -97,9 +115,7 @@ export function LoginEmailProfilePage() {
                 label="Continuar"
                 variant="filled"
                 disabled={!canContinue}
-                onPress={() => {
-                  // Backend + Step 4 navigation comes later
-                }}
+                onPress={handleContinue}
               />
             </View>
           </ScrollView>
