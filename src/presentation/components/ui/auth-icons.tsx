@@ -39,6 +39,20 @@ export function RefreshIcon({ size = 12, color = '#0a0b0a' }: IconProps) {
   );
 }
 
+/** Close (X) — avatar picker sheet */
+export function CloseIcon({ size = 20, color = '#f5f5f4' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 20 20" fill="none">
+      <Path
+        d="M5 5L15 15M15 5L5 15"
+        stroke={color}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
 /** LGPD shield with check — Figma auth Step 4 */
 export function ShieldCheckIcon({ size = 16, color = '#49dc14' }: IconProps) {
   return (

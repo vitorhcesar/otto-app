@@ -3,47 +3,48 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import '@/global.css';
+import "@/global.css";
 
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: "#000000",
+    background: "#ffffff",
+    backgroundElement: "#F0F0F3",
+    backgroundSelected: "#E0E1E6",
+    textSecondary: "#60646C",
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: "#ffffff",
+    background: "#000000",
+    backgroundElement: "#212225",
+    backgroundSelected: "#2E3135",
+    textSecondary: "#B0B4BA",
   },
 } as const;
 
 /** Design tokens from Otto Figma (Autenticação) */
 export const OttoColors = {
-  background: '#0a0b0a',
-  text: '#f5f5f4',
-  textSoft: '#767d73',
-  textDisabled: '#a5a9a2',
-  borderSoft: '#1c1d1b',
-  borderStrong: '#2d302c',
-  buttonFilled: '#e0e2df',
-  buttonFilledDisabled: '#eaebea',
-  buttonFilledText: '#0a0b0a',
-  primary: '#49dc14',
-  stepInactive: '#1c1d1b',
-  error: '#f04438',
-  errorSoft: '#f97066',
+  background: "#0a0b0a",
+  text: "#f5f5f4",
+  textSoft: "#767d73",
+  textDisabled: "#a5a9a2",
+  borderSoft: "#1c1d1b",
+  borderStrong: "#2d302c",
+  buttonFilled: "#e0e2df",
+  buttonFilledDisabled: "#eaebea",
+  buttonFilledText: "#0a0b0a",
+  primary: "#49dc14",
+  stepInactive: "#1c1d1b",
+  error: "#f04438",
+  errorSoft: "#f97066",
+  neutralBlackSoft: "#1C1D1B",
 } as const;
 
 export const OttoFonts = {
-  regular: 'Poppins_400Regular',
-  semiBold: 'Poppins_600SemiBold',
+  regular: "Poppins_400Regular",
+  semiBold: "Poppins_600SemiBold",
 } as const;
 
 export const OttoTypography = {
@@ -74,25 +75,25 @@ export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 export const Fonts = Platform.select({
   ios: {
     /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
+    sans: "system-ui",
     /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
+    serif: "ui-serif",
     /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
+    rounded: "ui-rounded",
     /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+    mono: "ui-monospace",
   },
   default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+    sans: "normal",
+    serif: "serif",
+    rounded: "normal",
+    mono: "monospace",
   },
   web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
+    sans: "var(--font-display)",
+    serif: "var(--font-serif)",
+    rounded: "var(--font-rounded)",
+    mono: "var(--font-mono)",
   },
 });
 
