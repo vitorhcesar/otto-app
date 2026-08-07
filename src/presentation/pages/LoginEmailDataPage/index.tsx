@@ -1,5 +1,5 @@
-import { Image } from 'expo-image';
-import { useState } from 'react';
+import { Image } from "expo-image";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,18 +8,21 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { RefreshIcon, ShieldCheckIcon } from '@/presentation/components/ui/auth-icons';
-import { Button } from '@/presentation/components/ui/button';
-import { StepGroup } from '@/presentation/components/ui/step-group';
-import { TextField } from '@/presentation/components/ui/text-field';
-import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
+import {
+  RefreshIcon,
+  ShieldCheckIcon,
+} from "@/presentation/components/ui/auth-icons";
+import { Button } from "@/presentation/components/ui/button";
+import { StepGroup } from "@/presentation/components/ui/step-group";
+import { TextField } from "@/presentation/components/ui/text-field";
+import { OttoColors, OttoTypography } from "@/presentation/constants/theme";
 
 /** Formats digits as DD/MM/YYYY */
 export function formatBirthDate(digits: string) {
-  const cleaned = digits.replace(/\D/g, '').slice(0, 8);
+  const cleaned = digits.replace(/\D/g, "").slice(0, 8);
 
   if (cleaned.length <= 2) {
     return cleaned;
@@ -34,7 +37,7 @@ export function formatBirthDate(digits: string) {
 
 /** Formats digits as XXX.XXX.XXX-XX */
 export function formatCpf(digits: string) {
-  const cleaned = digits.replace(/\D/g, '').slice(0, 11);
+  const cleaned = digits.replace(/\D/g, "").slice(0, 11);
 
   if (cleaned.length <= 3) {
     return cleaned;
@@ -52,7 +55,7 @@ export function formatCpf(digits: string) {
 }
 
 function isCompleteBirthDate(value: string) {
-  const digits = value.replace(/\D/g, '');
+  const digits = value.replace(/\D/g, "");
   if (digits.length !== 8) {
     return false;
   }
@@ -75,13 +78,13 @@ function isCompleteBirthDate(value: string) {
 }
 
 function isCompleteCpf(value: string) {
-  return value.replace(/\D/g, '').length === 11;
+  return value.replace(/\D/g, "").length === 11;
 }
 
 export function LoginEmailDataPage() {
-  const [fullName, setFullName] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [cpf, setCpf] = useState('');
+  const [fullName, setFullName] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [cpf, setCpf] = useState("");
 
   const canContinue =
     fullName.trim().length >= 2 &&
@@ -95,14 +98,16 @@ export function LoginEmailDataPage() {
 
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.avatarWrap}>
               <Image
-                source={require('@/assets/images/auth/avatar-default.png')}
+                source={require("@/assets/images/auth/avatar-default.png")}
                 style={styles.avatar}
                 contentFit="cover"
                 accessibilityLabel="Foto de perfil"
@@ -113,7 +118,8 @@ export function LoginEmailDataPage() {
                 style={styles.avatarAction}
                 onPress={() => {
                   // Image picker wiring comes later
-                }}>
+                }}
+              >
                 <RefreshIcon size={12} color={OttoColors.buttonFilledText} />
               </Pressable>
             </View>
@@ -121,7 +127,9 @@ export function LoginEmailDataPage() {
             <View style={styles.form}>
               <View style={styles.headerCopy}>
                 <Text style={styles.title}>Seus dados</Text>
-                <Text style={styles.subtitle}>Essas informações mantêm sua conta segura</Text>
+                <Text style={styles.subtitle}>
+                  Essas informações mantêm sua conta segura
+                </Text>
               </View>
 
               <View style={styles.fields}>
@@ -195,70 +203,70 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 48,
     gap: 32,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   avatarWrap: {
     width: 112,
     height: 112,
-    position: 'relative',
+    position: "relative",
   },
   avatar: {
     width: 112,
     height: 112,
-    borderRadius: 56,
+    borderRadius: "50%",
     backgroundColor: OttoColors.borderStrong,
   },
   avatarAction: {
-    position: 'absolute',
+    position: "absolute",
     right: 0,
     bottom: 0,
     width: 28,
     height: 28,
     borderRadius: 14,
     backgroundColor: OttoColors.text,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   form: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
+    alignSelf: "stretch",
+    alignItems: "center",
     gap: 24,
   },
   headerCopy: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
+    alignSelf: "stretch",
+    alignItems: "center",
     gap: 4,
   },
   title: {
     ...OttoTypography.h3,
     color: OttoColors.text,
-    textAlign: 'center',
-    alignSelf: 'stretch',
+    textAlign: "center",
+    alignSelf: "stretch",
   },
   subtitle: {
     ...OttoTypography.caption,
     color: OttoColors.textSoft,
-    textAlign: 'center',
-    alignSelf: 'stretch',
+    textAlign: "center",
+    alignSelf: "stretch",
   },
   fields: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     gap: 16,
   },
   securityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 6,
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   securityText: {
     ...OttoTypography.caption,
