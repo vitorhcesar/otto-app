@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getAuthStep, paramString } from '@/presentation/auth/auth-flow';
 import { Button } from '@/presentation/components/ui/button';
 import { getPhoneDigits, PhoneField } from '@/presentation/components/ui/phone-field';
 import { StepGroup } from '@/presentation/components/ui/step-group';
@@ -28,8 +29,13 @@ function getUsernameFromEmail(email?: string) {
 
 export function LoginEmailWhatsAppPage() {
   const router = useRouter();
-  const { email } = useLocalSearchParams<{ email?: string }>();
+  const { email: emailParam } = useLocalSearchParams<{
+    email?: string;
+    method?: string;
+  }>();
+  const email = paramString(emailParam);
   const [phone, setPhone] = useState('');
+  const step = getAuthStep('email', 'phone');
 
   const username = useMemo(() => getUsernameFromEmail(email), [email]);
   const canContinue = getPhoneDigits(phone).length >= 10;
@@ -37,7 +43,7 @@ export function LoginEmailWhatsAppPage() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <StepGroup total={5} current={1} style={styles.steps} />
+        <StepGroup total={step.total} current={step.current} style={styles.steps} />
 
         <KeyboardAvoidingView
           style={styles.flex}
@@ -69,7 +75,8 @@ export function LoginEmailWhatsAppPage() {
                   router.push({
                     pathname: '/login-email-code',
                     params: {
-                      email: typeof email === 'string' ? email : '',
+                      method: 'email',
+                      email,
                       phone: getPhoneDigits(phone),
                     },
                   });

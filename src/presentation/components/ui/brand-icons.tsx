@@ -53,3 +53,24 @@ export function WhatsAppIcon({ size = 16, color = '#E0E2DF' }: IconProps) {
     </Svg>
   );
 }
+
+/** Envelope mark for email entry toggle — matches brand icon size/style */
+export function EmailIcon({ size = 16, color = '#E0E2DF' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <Path
+        d="M2.5 3.5H13.5C13.7761 3.5 14 3.72386 14 4V12C14 12.2761 13.7761 12.5 13.5 12.5H2.5C2.22386 12.5 2 12.2761 2 12V4C2 3.72386 2.22386 3.5 2.5 3.5Z"
+        stroke={color}
+        strokeWidth={1.2}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M2.5 4.5L8 9L13.5 4.5"
+        stroke={color}
+        strokeWidth={1.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}

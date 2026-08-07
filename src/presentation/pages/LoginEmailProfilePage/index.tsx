@@ -1,6 +1,6 @@
-import { Image } from 'expo-image';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { Image } from "expo-image";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -8,31 +8,38 @@ import {
   StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Button } from '@/presentation/components/ui/button';
-import { PasswordField } from '@/presentation/components/ui/password-field';
-import { StepGroup } from '@/presentation/components/ui/step-group';
-import { TextField } from '@/presentation/components/ui/text-field';
-import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
+import {
+  getAuthStep,
+  isValidEmail,
+  paramString,
+  parseAuthMethod,
+} from "@/presentation/auth/auth-flow";
+import { Button } from "@/presentation/components/ui/button";
+import { PasswordField } from "@/presentation/components/ui/password-field";
+import { StepGroup } from "@/presentation/components/ui/step-group";
+import { TextField } from "@/presentation/components/ui/text-field";
+import { OttoColors, OttoTypography } from "@/presentation/constants/theme";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 6;
-
-function isValidEmail(value: string) {
-  return EMAIL_PATTERN.test(value.trim());
-}
 
 export function LoginEmailProfilePage() {
   const router = useRouter();
-  const { email: emailParam, phone } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     email?: string;
     phone?: string;
+    method?: string;
   }>();
-  const [email, setEmail] = useState(typeof emailParam === 'string' ? emailParam : '');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const method = parseAuthMethod(params.method);
+  const phone = paramString(params.phone);
+  const emailParam = paramString(params.email);
+  const step = getAuthStep(method, "profile");
+
+  const [email, setEmail] = useState(method === "email" ? emailParam : "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const passwordsMatch = password.length > 0 && password === confirmPassword;
   const canContinue =
@@ -46,10 +53,11 @@ export function LoginEmailProfilePage() {
     }
 
     router.push({
-      pathname: '/login-email-data',
+      pathname: "/login-email-data",
       params: {
+        method,
         email: email.trim(),
-        phone: typeof phone === 'string' ? phone : '',
+        phone,
       },
     });
   }
@@ -57,17 +65,23 @@ export function LoginEmailProfilePage() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <StepGroup total={5} current={3} style={styles.steps} />
+        <StepGroup
+          total={step.total}
+          current={step.current}
+          style={styles.steps}
+        />
 
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+          >
             <Image
-              source={require('@/assets/images/auth/logo.png')}
+              source={require("@/assets/images/auth/logo.png")}
               style={styles.logo}
               contentFit="contain"
               accessibilityLabel="Otto"
@@ -76,7 +90,9 @@ export function LoginEmailProfilePage() {
             <View style={styles.form}>
               <View style={styles.headerCopy}>
                 <Text style={styles.title}>Comece por aqui</Text>
-                <Text style={styles.subtitle}>Só mais alguns dados e você está dentro</Text>
+                <Text style={styles.subtitle}>
+                  Só mais alguns dados e você está dentro
+                </Text>
               </View>
 
               <View style={styles.fields}>
@@ -107,7 +123,6 @@ export function LoginEmailProfilePage() {
                   onChangeText={setConfirmPassword}
                   autoComplete="new-password"
                   returnKeyType="done"
-                  defaultVisible
                 />
               </View>
 
@@ -142,44 +157,44 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 48,
     gap: 32,
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   logo: {
     width: 57,
     height: 59,
   },
   form: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
+    alignSelf: "stretch",
+    alignItems: "center",
     gap: 24,
   },
   headerCopy: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
+    alignSelf: "stretch",
+    alignItems: "center",
     gap: 4,
   },
   title: {
     ...OttoTypography.h3,
     color: OttoColors.text,
-    textAlign: 'center',
-    alignSelf: 'stretch',
+    textAlign: "center",
+    alignSelf: "stretch",
   },
   subtitle: {
     ...OttoTypography.caption,
     color: OttoColors.textSoft,
-    textAlign: 'center',
-    alignSelf: 'stretch',
+    textAlign: "center",
+    alignSelf: "stretch",
   },
   fields: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
     gap: 16,
   },
 });

@@ -12,6 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import {
+  getAuthStep,
+  paramString,
+  parseAuthMethod,
+} from '@/presentation/auth/auth-flow';
 import { Button } from '@/presentation/components/ui/button';
 import { OtpField } from '@/presentation/components/ui/otp-field';
 import { formatBrazilPhoneDisplay } from '@/presentation/components/ui/phone-field';
@@ -24,15 +29,21 @@ const CODE_LENGTH = 6;
 
 export function LoginEmailCodePage() {
   const router = useRouter();
-  const { email, phone } = useLocalSearchParams<{ email?: string; phone?: string }>();
+  const params = useLocalSearchParams<{
+    email?: string;
+    phone?: string;
+    method?: string;
+  }>();
+  const method = parseAuthMethod(params.method);
+  const email = paramString(params.email);
+  const phone = paramString(params.phone);
+  const step = getAuthStep(method, 'code');
+
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
 
-  const phoneDisplay = useMemo(
-    () => formatBrazilPhoneDisplay(phone ?? ''),
-    [phone],
-  );
+  const phoneDisplay = useMemo(() => formatBrazilPhoneDisplay(phone), [phone]);
   const canContinue = code.replace(/\D/g, '').length === CODE_LENGTH;
   const canResend = secondsLeft <= 0;
 
@@ -76,8 +87,9 @@ export function LoginEmailCodePage() {
     router.push({
       pathname: '/login-email-profile',
       params: {
-        email: typeof email === 'string' ? email : '',
-        phone: typeof phone === 'string' ? phone : '',
+        method,
+        email,
+        phone,
       },
     });
   }
@@ -85,7 +97,7 @@ export function LoginEmailCodePage() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <StepGroup total={5} current={2} style={styles.steps} />
+        <StepGroup total={step.total} current={step.current} style={styles.steps} />
 
         <KeyboardAvoidingView
           style={styles.flex}

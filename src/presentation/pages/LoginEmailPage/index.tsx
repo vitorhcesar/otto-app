@@ -12,22 +12,55 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AppleIcon, GoogleIcon, WhatsAppIcon } from '@/presentation/components/ui/brand-icons';
+import { type AuthMethod, isValidEmail } from '@/presentation/auth/auth-flow';
+import {
+  AppleIcon,
+  EmailIcon,
+  GoogleIcon,
+  WhatsAppIcon,
+} from '@/presentation/components/ui/brand-icons';
 import { Button } from '@/presentation/components/ui/button';
 import { ContentDivider } from '@/presentation/components/ui/content-divider';
+import { getPhoneDigits, PhoneField } from '@/presentation/components/ui/phone-field';
 import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function isValidEmail(value: string) {
-  return EMAIL_PATTERN.test(value.trim());
-}
-
 export function LoginEmailPage() {
   const router = useRouter();
+  const [method, setMethod] = useState<AuthMethod>('email');
   const [email, setEmail] = useState('');
-  const canContinue = isValidEmail(email);
+  const [phone, setPhone] = useState('');
+
+  const canContinue =
+    method === 'email'
+      ? isValidEmail(email)
+      : getPhoneDigits(phone).length >= 10;
+
+  function handleContinue() {
+    if (!canContinue) {
+      return;
+    }
+
+    if (method === 'email') {
+      router.push({
+        pathname: '/login-email-whatsapp',
+        params: {
+          method: 'email',
+          email: email.trim(),
+        },
+      });
+      return;
+    }
+
+    router.push({
+      pathname: '/login-email-code',
+      params: {
+        method: 'whatsapp',
+        email: '',
+        phone: getPhoneDigits(phone),
+      },
+    });
+  }
 
   return (
     <View style={styles.root}>
@@ -47,31 +80,32 @@ export function LoginEmailPage() {
             />
 
             <View style={styles.form}>
-              <Text style={styles.title}>Comece com seu E-mail</Text>
+              <Text style={styles.title}>
+                {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu WhatsApp'}
+              </Text>
 
-              <TextField
-                label="Seu melhor E-mail"
-                placeholder="Seu melhor email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                autoComplete="email"
-                textContentType="emailAddress"
-                returnKeyType="done"
-              />
+              {method === 'email' ? (
+                <TextField
+                  label="Seu melhor E-mail"
+                  placeholder="Seu melhor email"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  returnKeyType="done"
+                />
+              ) : (
+                <PhoneField value={phone} onChangeText={setPhone} />
+              )}
 
               <Button
                 label="Continuar"
                 variant="filled"
                 disabled={!canContinue}
-                onPress={() => {
-                  router.push({
-                    pathname: '/login-email-whatsapp',
-                    params: { email: email.trim() },
-                  });
-                }}
+                onPress={handleContinue}
               />
             </View>
 
@@ -94,14 +128,21 @@ export function LoginEmailPage() {
                   // Backend wiring comes later
                 }}
               />
-              <Button
-                label="Logar com seu WhatsApp"
-                variant="stroke"
-                leftIcon={<WhatsAppIcon size={16} />}
-                onPress={() => {
-                  // Backend wiring comes later
-                }}
-              />
+              {method === 'email' ? (
+                <Button
+                  label="Logar com seu WhatsApp"
+                  variant="stroke"
+                  leftIcon={<WhatsAppIcon size={16} />}
+                  onPress={() => setMethod('whatsapp')}
+                />
+              ) : (
+                <Button
+                  label="Logar com seu E-mail"
+                  variant="stroke"
+                  leftIcon={<EmailIcon size={16} />}
+                  onPress={() => setMethod('email')}
+                />
+              )}
             </View>
 
             <View style={styles.terms}>
