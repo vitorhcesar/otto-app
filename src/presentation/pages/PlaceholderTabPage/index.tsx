@@ -25,7 +25,7 @@ export function PlaceholderTabPage({
     try {
       await signOut();
       resetDraft();
-      // AuthGate redireciona para / — não chamar router.replace aqui (evita loop).
+      // Stack.Protected no root troca para as telas de login ao limpar a sessão.
     } catch {
       Alert.alert('Erro', 'Não foi possível sair. Tente novamente.');
     } finally {

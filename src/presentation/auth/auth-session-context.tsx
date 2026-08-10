@@ -67,7 +67,13 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     try {
-      await api.modules.auth.logout();
+      // Não travar o UI se a API demorar/falhar — limpa sessão local no finally.
+      await Promise.race([
+        api.modules.auth.logout(),
+        new Promise<void>((resolve) => {
+          setTimeout(resolve, 2500);
+        }),
+      ]);
     } catch {
       // ignore network errors on logout
     } finally {

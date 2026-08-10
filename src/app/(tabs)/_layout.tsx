@@ -3,26 +3,18 @@ import { Tabs, usePathname, useRouter } from 'expo-router';
 import { useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { BlurTargetProvider } from '@/presentation/blur/blur-target-context';
 import {
   AppBottomBar,
   type AppTabKey,
 } from '@/presentation/components/app-bottom-bar';
 import { OttoColors } from '@/presentation/constants/theme';
-import { HomeLoading } from '@/presentation/pages/HomePage';
 
 /** Espaço reservado para AI bar + nav + safe area */
 export const APP_BOTTOM_CHROME_HEIGHT = 148;
 
 export default function TabsLayout() {
-  const { isLoading, isAuthenticated } = useAuthSession();
   const blurTargetRef = useRef<View | null>(null);
-
-  if (isLoading || !isAuthenticated) {
-    // AuthGate no root faz o redirect; evitar <Redirect> aqui (loop com replace).
-    return <HomeLoading />;
-  }
 
   return (
     <BlurTargetProvider value={blurTargetRef}>
