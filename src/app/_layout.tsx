@@ -3,10 +3,16 @@ import {
   Poppins_600SemiBold,
   useFonts,
 } from '@expo-google-fonts/poppins';
-import { Stack } from 'expo-router';
+import {
+  DarkTheme,
+  Stack,
+  ThemeProvider,
+  type Theme,
+} from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, View } from 'react-native';
 
 import { AuthDraftProvider } from '@/presentation/auth/auth-draft-context';
 import {
@@ -19,6 +25,18 @@ import { HomeLoading } from '@/presentation/pages/HomePage';
 
 SplashScreen.preventAutoHideAsync();
 
+const OttoNavigationTheme: Theme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: OttoColors.background,
+    card: OttoColors.background,
+    border: OttoColors.borderSoft,
+    primary: OttoColors.primary,
+    text: OttoColors.text,
+  },
+};
+
 function RootNavigator() {
   const { isLoading, isAuthenticated } = useAuthSession();
 
@@ -30,7 +48,8 @@ function RootNavigator() {
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: OttoColors.background },
+        animation: 'fade',
+        contentStyle: styles.screen,
       }}
     >
       <Stack.Protected guard={isAuthenticated}>
@@ -65,16 +84,30 @@ export default function RootLayout() {
   }, [fontsLoaded, fontError]);
 
   if (!fontsLoaded && !fontError) {
-    return null;
+    return <View style={styles.root} />;
   }
 
   return (
-    <AuthDraftProvider>
-      <AuthSessionProvider>
-        <StatusBar style="light" />
-        <AnimatedSplashOverlay />
-        <RootNavigator />
-      </AuthSessionProvider>
-    </AuthDraftProvider>
+    <View style={styles.root}>
+      <ThemeProvider value={OttoNavigationTheme}>
+        <AuthDraftProvider>
+          <AuthSessionProvider>
+            <StatusBar style="light" />
+            <AnimatedSplashOverlay />
+            <RootNavigator />
+          </AuthSessionProvider>
+        </AuthDraftProvider>
+      </ThemeProvider>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: OttoColors.background,
+  },
+  screen: {
+    backgroundColor: OttoColors.background,
+  },
+});

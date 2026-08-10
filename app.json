@@ -6,15 +6,18 @@
     "orientation": "portrait",
     "icon": "./assets/images/otto-app-icon.png",
     "scheme": "otto",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0a0b0a",
     "ios": {
-      "icon": "./assets/images/otto-app-icon.png"
+      "icon": "./assets/images/otto-app-icon.png",
+      "backgroundColor": "#0a0b0a"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#141213",
+        "backgroundColor": "#0a0b0a",
         "foregroundImage": "./assets/images/otto-logo.png"
       },
+      "backgroundColor": "#0a0b0a",
       "predictiveBackGestureEnabled": false,
       "package": "com.yond.otto"
     },
@@ -27,7 +30,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#141213",
+          "backgroundColor": "#0a0b0a",
           "image": "./assets/images/otto-logo.png",
           "imageWidth": 76
         }
