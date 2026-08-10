@@ -27,7 +27,9 @@ export const Colors = {
 /** Design tokens from Otto Figma (Autenticação) */
 export const OttoColors = {
   background: "#0a0b0a",
+  surface: "#121311",
   text: "#f5f5f4",
+  textMid: "#cbceca",
   textSoft: "#767d73",
   textDisabled: "#a5a9a2",
   borderSoft: "#1c1d1b",
@@ -36,9 +38,13 @@ export const OttoColors = {
   buttonFilledDisabled: "#eaebea",
   buttonFilledText: "#0a0b0a",
   primary: "#49dc14",
+  primarySoft: "#95ff52",
   stepInactive: "#1c1d1b",
   error: "#f04438",
   errorSoft: "#f97066",
+  danger: "#c33a22",
+  income: "#63e29f",
+  expense: "#ff6b6b",
   neutralBlackSoft: "#1C1D1B",
 } as const;
 
@@ -48,6 +54,11 @@ export const OttoFonts = {
 } as const;
 
 export const OttoTypography = {
+  h1: {
+    fontSize: 24,
+    lineHeight: 29,
+    fontFamily: OttoFonts.semiBold,
+  },
   h3: {
     fontSize: 18,
     lineHeight: 22,
@@ -56,6 +67,11 @@ export const OttoTypography = {
   body: {
     fontSize: 16,
     lineHeight: 26,
+    fontFamily: OttoFonts.regular,
+  },
+  bodySmall: {
+    fontSize: 14,
+    lineHeight: 22,
     fontFamily: OttoFonts.regular,
   },
   caption: {

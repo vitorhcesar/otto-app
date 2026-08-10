@@ -1,5 +1,6 @@
-import { HomePage } from '@/presentation/pages/HomePage';
+import { Redirect } from 'expo-router';
 
-export default function HomeRoute() {
-  return <HomePage />;
+/** Compat: /home → tab Atividades */
+export default function HomeRedirect() {
+  return <Redirect href="/(tabs)/activities" />;
 }

@@ -49,7 +49,7 @@ export function LoginPasswordPage() {
       const result = await api.modules.auth.login(email.trim(), password);
       await applyAuthResult(result);
       resetDraft();
-      router.replace('/home');
+      router.replace('/(tabs)/activities');
     } catch (error) {
       Alert.alert(
         'Erro no login',

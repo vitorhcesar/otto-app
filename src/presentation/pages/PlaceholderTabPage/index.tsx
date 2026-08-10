@@ -1,21 +1,21 @@
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { Button } from '@/presentation/components/ui/button';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
-import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 
-export function HomePage() {
-  const router = useRouter();
+export function PlaceholderTabPage({
+  title,
+  subtitle,
+  showLogout = false,
+}: {
+  title: string;
+  subtitle?: string;
+  showLogout?: boolean;
+}) {
   const { signOut } = useAuthSession();
   const { resetDraft } = useAuthDraft();
   const [loading, setLoading] = useState(false);
@@ -34,56 +34,42 @@ export function HomePage() {
   }
 
   return (
-    <View style={styles.root}>
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
-          <Text style={styles.title}>Home</Text>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
+      <View style={styles.content}>
+        <Text style={styles.title}>{title}</Text>
+        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {showLogout ? (
           <Button
             label="Logout"
             variant="stroke"
             loading={loading}
             onPress={handleLogout}
           />
-          <Button
-            label="Ir para Atividades"
-            variant="filled"
-            onPress={() => router.replace('/(tabs)/activities')}
-          />
-        </View>
-      </SafeAreaView>
-    </View>
-  );
-}
-
-export function HomeLoading() {
-  return (
-    <View style={styles.root}>
-      <SafeAreaView style={styles.safeArea}>
-        <ActivityIndicator color={OttoColors.primary} />
-      </SafeAreaView>
-    </View>
+        ) : null}
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
+  safeArea: {
     flex: 1,
     backgroundColor: OttoColors.background,
   },
-  safeArea: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   content: {
+    flex: 1,
     alignItems: 'center',
-    gap: 24,
+    justifyContent: 'center',
     paddingHorizontal: 24,
-    width: '100%',
-    maxWidth: 400,
+    gap: 16,
   },
   title: {
-    ...OttoTypography.h3,
+    ...OttoTypography.h1,
     color: OttoColors.text,
+  },
+  subtitle: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+    textAlign: 'center',
   },
 });

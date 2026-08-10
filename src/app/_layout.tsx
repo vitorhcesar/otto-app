@@ -33,25 +33,25 @@ function AuthGate({ children }: { children: ReactNode }) {
   const { isLoading, isAuthenticated } = useAuthSession();
   const segments = useSegments();
   const router = useRouter();
+  const root = segments[0] ?? 'index';
 
   useEffect(() => {
     if (isLoading) {
       return;
     }
 
-    const root = segments[0] ?? 'index';
     const onAuthScreen = AUTH_SCREENS.has(root) || root === 'explore';
-    const onHome = root === 'home';
+    const onApp = root === '(tabs)' || root === 'home';
 
     if (isAuthenticated && onAuthScreen) {
-      router.replace('/home');
+      router.replace('/(tabs)/activities');
       return;
     }
 
-    if (!isAuthenticated && onHome) {
+    if (!isAuthenticated && onApp) {
       router.replace('/');
     }
-  }, [isAuthenticated, isLoading, router, segments]);
+  }, [isAuthenticated, isLoading, root, router]);
 
   if (isLoading) {
     return <HomeLoading />;
@@ -95,6 +95,7 @@ export default function RootLayout() {
             <Stack.Screen name="login-email-profile" />
             <Stack.Screen name="login-email-data" />
             <Stack.Screen name="login-password" />
+            <Stack.Screen name="(tabs)" />
             <Stack.Screen name="home" />
             <Stack.Screen name="explore" />
           </Stack>

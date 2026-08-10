@@ -155,7 +155,7 @@ export function LoginEmailDataPage() {
       });
       await applyAuthResult(result);
       resetDraft();
-      router.replace("/home");
+      router.replace("/(tabs)/activities");
     } catch (error) {
       Alert.alert(
         "Erro ao criar conta",
