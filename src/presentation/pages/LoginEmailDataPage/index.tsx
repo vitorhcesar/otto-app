@@ -1,7 +1,8 @@
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,11 +13,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { getErrorMessage } from "@/infra/http/get-error-message";
 import {
   getAuthStep,
   paramString,
   parseAuthMethod,
 } from "@/presentation/auth/auth-flow";
+import { useAuthDraft } from "@/presentation/auth/auth-draft-context";
+import { useAuthSession } from "@/presentation/auth/auth-session-context";
 import {
   RefreshIcon,
   ShieldCheckIcon,
@@ -30,6 +34,7 @@ import {
   type IAvatarOption,
 } from "@/presentation/constants/avatars";
 import { OttoColors, OttoTypography } from "@/presentation/constants/theme";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 
 /** Formats digits as DD/MM/YYYY */
 export function formatBirthDate(digits: string) {
@@ -93,14 +98,18 @@ function isCompleteCpf(value: string) {
 }
 
 export function LoginEmailDataPage() {
+  const router = useRouter();
+  const api = useApiService();
+  const { applyAuthResult } = useAuthSession();
+  const { draft, resetDraft } = useAuthDraft();
   const params = useLocalSearchParams<{
     email?: string;
     phone?: string;
     method?: string;
   }>();
   const method = parseAuthMethod(params.method);
-  const email = paramString(params.email);
-  const phone = paramString(params.phone);
+  const email = paramString(params.email) || draft.email;
+  const phone = paramString(params.phone) || draft.phone;
   const step = getAuthStep(method, "data");
 
   const [fullName, setFullName] = useState("");
@@ -110,20 +119,51 @@ export function LoginEmailDataPage() {
   const [selectedAvatar, setSelectedAvatar] = useState<IAvatarOption>(
     DEFAULT_AVATARS[5],
   );
+  const [loading, setLoading] = useState(false);
 
   const canContinue =
     fullName.trim().length >= 2 &&
     isCompleteBirthDate(birthDate) &&
-    isCompleteCpf(cpf);
+    isCompleteCpf(cpf) &&
+    Boolean(draft.password) &&
+    Boolean(draft.verificationToken);
 
-  function handleCreateAccount() {
-    if (!canContinue) {
+  async function handleCreateAccount() {
+    if (!canContinue || loading) {
       return;
     }
 
-    // Backend + Step 5 navigation comes later
-    // Available flow context: method, email, phone
-    return { method, email, phone };
+    if (!draft.password || !draft.verificationToken) {
+      Alert.alert(
+        "Sessão incompleta",
+        "Volte e conclua a verificação do código e a senha.",
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await api.modules.auth.register({
+        email: email.trim(),
+        password: draft.password,
+        phone,
+        verificationToken: draft.verificationToken,
+        fullName: fullName.trim(),
+        birthDate,
+        cpf: cpf.replace(/\D/g, ""),
+        avatarKey: selectedAvatar.id,
+      });
+      await applyAuthResult(result);
+      resetDraft();
+      router.replace("/home");
+    } catch (error) {
+      Alert.alert(
+        "Erro ao criar conta",
+        getErrorMessage(error, "Não foi possível criar a conta. Tente novamente."),
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -211,6 +251,7 @@ export function LoginEmailDataPage() {
                 label="Criar conta"
                 variant="filled"
                 disabled={!canContinue}
+                loading={loading}
                 onPress={handleCreateAccount}
               />
             </View>

@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,7 +13,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getErrorMessage } from '@/infra/http/get-error-message';
 import { type AuthMethod, isValidEmail } from '@/presentation/auth/auth-flow';
+import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import {
   AppleIcon,
   EmailIcon,
@@ -24,42 +27,72 @@ import { ContentDivider } from '@/presentation/components/ui/content-divider';
 import { getPhoneDigits, PhoneField } from '@/presentation/components/ui/phone-field';
 import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
+import { useApiService } from '@/presentation/hooks/use-api-service';
 
 export function LoginEmailPage() {
   const router = useRouter();
-  const [method, setMethod] = useState<AuthMethod>('email');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const api = useApiService();
+  const { setMethod, setEmail, setPhone } = useAuthDraft();
+  const [method, setMethodLocal] = useState<AuthMethod>('email');
+  const [email, setEmailLocal] = useState('');
+  const [phone, setPhoneLocal] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const canContinue =
     method === 'email'
       ? isValidEmail(email)
       : getPhoneDigits(phone).length >= 10;
 
-  function handleContinue() {
-    if (!canContinue) {
+  async function handleContinue() {
+    if (!canContinue || loading) {
       return;
     }
 
-    if (method === 'email') {
+    setLoading(true);
+    try {
+      if (method === 'email') {
+        const trimmed = email.trim();
+        const result = await api.modules.auth.startEmail(trimmed);
+        setMethod('email');
+        setEmail(result.email);
+
+        if (result.nextStep === 'login') {
+          router.push({
+            pathname: '/login-password',
+            params: { email: result.email },
+          });
+          return;
+        }
+
+        router.push({
+          pathname: '/login-email-whatsapp',
+          params: {
+            method: 'email',
+            email: result.email,
+          },
+        });
+        return;
+      }
+
+      const phoneDigits = getPhoneDigits(phone);
+      await api.modules.auth.sendOtp(phoneDigits);
+      setMethod('whatsapp');
+      setPhone(phoneDigits);
+      setEmail('');
+
       router.push({
-        pathname: '/login-email-whatsapp',
+        pathname: '/login-email-code',
         params: {
-          method: 'email',
-          email: email.trim(),
+          method: 'whatsapp',
+          email: '',
+          phone: phoneDigits,
         },
       });
-      return;
+    } catch (error) {
+      Alert.alert('Erro', getErrorMessage(error, 'Não foi possível continuar. Tente novamente.'));
+    } finally {
+      setLoading(false);
     }
-
-    router.push({
-      pathname: '/login-email-code',
-      params: {
-        method: 'whatsapp',
-        email: '',
-        phone: getPhoneDigits(phone),
-      },
-    });
   }
 
   return (
@@ -67,11 +100,13 @@ export function LoginEmailPage() {
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+          >
             <Image
               source={require('@/assets/images/auth/logo.png')}
               style={styles.logo}
@@ -89,7 +124,7 @@ export function LoginEmailPage() {
                   label="Seu melhor E-mail"
                   placeholder="Seu melhor email"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={setEmailLocal}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -98,13 +133,14 @@ export function LoginEmailPage() {
                   returnKeyType="done"
                 />
               ) : (
-                <PhoneField value={phone} onChangeText={setPhone} />
+                <PhoneField value={phone} onChangeText={setPhoneLocal} />
               )}
 
               <Button
                 label="Continuar"
                 variant="filled"
                 disabled={!canContinue}
+                loading={loading}
                 onPress={handleContinue}
               />
             </View>
@@ -133,14 +169,20 @@ export function LoginEmailPage() {
                   label="Logar com seu WhatsApp"
                   variant="stroke"
                   leftIcon={<WhatsAppIcon size={16} />}
-                  onPress={() => setMethod('whatsapp')}
+                  onPress={() => {
+                    setMethodLocal('whatsapp');
+                    setMethod('whatsapp');
+                  }}
                 />
               ) : (
                 <Button
                   label="Logar com seu E-mail"
                   variant="stroke"
                   leftIcon={<EmailIcon size={16} />}
-                  onPress={() => setMethod('email')}
+                  onPress={() => {
+                    setMethodLocal('email');
+                    setMethod('email');
+                  }}
                 />
               )}
             </View>
@@ -151,7 +193,8 @@ export function LoginEmailPage() {
                 accessibilityRole="link"
                 onPress={() => {
                   // Terms link comes later
-                }}>
+                }}
+              >
                 <Text style={styles.termsLink}>Termos de uso</Text>
               </Pressable>
             </View>

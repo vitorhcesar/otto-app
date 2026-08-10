@@ -17,6 +17,7 @@ import {
   paramString,
   parseAuthMethod,
 } from "@/presentation/auth/auth-flow";
+import { useAuthDraft } from "@/presentation/auth/auth-draft-context";
 import { Button } from "@/presentation/components/ui/button";
 import { PasswordField } from "@/presentation/components/ui/password-field";
 import { StepGroup } from "@/presentation/components/ui/step-group";
@@ -27,18 +28,19 @@ const MIN_PASSWORD_LENGTH = 6;
 
 export function LoginEmailProfilePage() {
   const router = useRouter();
+  const { setEmail, setPassword, setPhone, setMethod, draft } = useAuthDraft();
   const params = useLocalSearchParams<{
     email?: string;
     phone?: string;
     method?: string;
   }>();
   const method = parseAuthMethod(params.method);
-  const phone = paramString(params.phone);
-  const emailParam = paramString(params.email);
+  const phone = paramString(params.phone) || draft.phone;
+  const emailParam = paramString(params.email) || draft.email;
   const step = getAuthStep(method, "profile");
 
-  const [email, setEmail] = useState(method === "email" ? emailParam : "");
-  const [password, setPassword] = useState("");
+  const [email, setEmailLocal] = useState(emailParam);
+  const [password, setPasswordLocal] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const passwordsMatch = password.length > 0 && password === confirmPassword;
@@ -51,6 +53,11 @@ export function LoginEmailProfilePage() {
     if (!canContinue) {
       return;
     }
+
+    setMethod(method);
+    setEmail(email.trim());
+    setPassword(password);
+    setPhone(phone);
 
     router.push({
       pathname: "/login-email-data",
@@ -100,7 +107,7 @@ export function LoginEmailProfilePage() {
                   label="Digite seu E-mail"
                   placeholder="Digite seu E-mail"
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={setEmailLocal}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -112,7 +119,7 @@ export function LoginEmailProfilePage() {
                   label="Digite sua senha"
                   placeholder="Digite sua senha"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={setPasswordLocal}
                   autoComplete="new-password"
                   returnKeyType="next"
                 />

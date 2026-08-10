@@ -1,9 +1,9 @@
 import { HttpClient, type IHttpClient } from '@/infra/http/http-client';
 import { API_BASE_URL } from '@/infra/http/services/api/api-env';
+import { AuthModule, type IAuthModule } from '@/infra/http/services/api/modules/auth.module';
 
 export interface IApiServiceModules {
-  // Registrar modules aqui conforme os recursos da API forem criados.
-  // Ex.: orders: IOrdersModule;
+  auth: IAuthModule;
 }
 
 export interface IApiService {
@@ -14,9 +14,8 @@ export class ApiService implements IApiService {
   public readonly modules: IApiServiceModules;
 
   constructor(httpClient: IHttpClient = new HttpClient(API_BASE_URL)) {
-    void httpClient;
     this.modules = {
-      // Ex.: orders: new OrdersModule(httpClient),
+      auth: new AuthModule(httpClient),
     };
   }
 }

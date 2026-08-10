@@ -1,11 +1,10 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,64 +13,47 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getErrorMessage } from '@/infra/http/get-error-message';
-import { getAuthStep, paramString } from '@/presentation/auth/auth-flow';
+import {
+  isValidEmail,
+  paramString,
+} from '@/presentation/auth/auth-flow';
 import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
+import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { Button } from '@/presentation/components/ui/button';
-import { getPhoneDigits, PhoneField } from '@/presentation/components/ui/phone-field';
-import { StepGroup } from '@/presentation/components/ui/step-group';
+import { PasswordField } from '@/presentation/components/ui/password-field';
+import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 import { useApiService } from '@/presentation/hooks/use-api-service';
 
-function getUsernameFromEmail(email?: string) {
-  if (!email) {
-    return 'usuário';
-  }
-
-  const localPart = email.split('@')[0]?.trim();
-  return localPart || 'usuário';
-}
-
-export function LoginEmailWhatsAppPage() {
+export function LoginPasswordPage() {
   const router = useRouter();
   const api = useApiService();
-  const { setEmail, setPhone, setMethod } = useAuthDraft();
-  const { email: emailParam } = useLocalSearchParams<{
-    email?: string;
-    method?: string;
-  }>();
-  const email = paramString(emailParam);
-  const [phone, setPhoneLocal] = useState('');
+  const { applyAuthResult } = useAuthSession();
+  const { draft, setEmail, resetDraft } = useAuthDraft();
+  const params = useLocalSearchParams<{ email?: string }>();
+  const emailParam = paramString(params.email) || draft.email;
+
+  const [email, setEmailLocal] = useState(emailParam);
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const step = getAuthStep('email', 'phone');
 
-  const username = useMemo(() => getUsernameFromEmail(email), [email]);
-  const canContinue = getPhoneDigits(phone).length >= 10;
+  const canContinue = isValidEmail(email) && password.length >= 6;
 
-  async function handleContinue() {
+  async function handleLogin() {
     if (!canContinue || loading) {
       return;
     }
 
-    const phoneDigits = getPhoneDigits(phone);
     setLoading(true);
     try {
-      await api.modules.auth.sendOtp(phoneDigits);
-      setMethod('email');
-      setEmail(email);
-      setPhone(phoneDigits);
-
-      router.push({
-        pathname: '/login-email-code',
-        params: {
-          method: 'email',
-          email,
-          phone: phoneDigits,
-        },
-      });
+      const result = await api.modules.auth.login(email.trim(), password);
+      await applyAuthResult(result);
+      resetDraft();
+      router.replace('/home');
     } catch (error) {
       Alert.alert(
-        'Erro',
-        getErrorMessage(error, 'Não foi possível enviar o código. Tente novamente.'),
+        'Erro no login',
+        getErrorMessage(error, 'Não foi possível entrar. Tente novamente.'),
       );
     } finally {
       setLoading(false);
@@ -81,8 +63,6 @@ export function LoginEmailWhatsAppPage() {
   return (
     <View style={styles.root}>
       <SafeAreaView style={styles.safeArea}>
-        <StepGroup total={step.total} current={step.current} style={styles.steps} />
-
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -101,26 +81,43 @@ export function LoginEmailWhatsAppPage() {
 
             <View style={styles.form}>
               <View style={styles.headerCopy}>
-                <Text style={styles.title}>Boas-vindas, {username}!</Text>
-                <Text style={styles.subtitle}>Qual seu número de WhatsApp?</Text>
+                <Text style={styles.title}>Entrar na sua conta</Text>
+                <Text style={styles.subtitle}>Use seu e-mail e senha</Text>
               </View>
 
-              <PhoneField value={phone} onChangeText={setPhoneLocal} />
+              <View style={styles.fields}>
+                <TextField
+                  label="E-mail"
+                  placeholder="E-mail"
+                  value={email}
+                  onChangeText={(value) => {
+                    setEmailLocal(value);
+                    setEmail(value.trim());
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  autoComplete="email"
+                  textContentType="emailAddress"
+                  returnKeyType="next"
+                />
+                <PasswordField
+                  label="Senha"
+                  placeholder="Senha"
+                  value={password}
+                  onChangeText={setPassword}
+                  autoComplete="password"
+                  returnKeyType="done"
+                />
+              </View>
 
               <Button
-                label="Continuar"
+                label="Entrar"
                 variant="filled"
                 disabled={!canContinue}
                 loading={loading}
-                onPress={handleContinue}
+                onPress={handleLogin}
               />
-            </View>
-
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Já tem uma conta?</Text>
-              <Pressable accessibilityRole="link" onPress={() => router.replace('/')}>
-                <Text style={styles.footerLink}>Fazer login</Text>
-              </Pressable>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -140,17 +137,12 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
-  steps: {
-    marginTop: 16,
-    marginBottom: 8,
-  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 48,
+    paddingVertical: 48,
     gap: 32,
     width: '100%',
     maxWidth: 400,
@@ -182,20 +174,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignSelf: 'stretch',
   },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  footerText: {
-    ...OttoTypography.body,
-    color: OttoColors.textSoft,
-  },
-  footerLink: {
-    ...OttoTypography.body,
-    color: OttoColors.text,
-    textDecorationLine: 'underline',
+  fields: {
+    alignSelf: 'stretch',
+    gap: 16,
   },
 });

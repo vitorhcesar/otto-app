@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -12,36 +13,43 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getErrorMessage } from '@/infra/http/get-error-message';
 import {
   getAuthStep,
   paramString,
   parseAuthMethod,
 } from '@/presentation/auth/auth-flow';
+import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import { Button } from '@/presentation/components/ui/button';
 import { OtpField } from '@/presentation/components/ui/otp-field';
 import { formatBrazilPhoneDisplay } from '@/presentation/components/ui/phone-field';
 import { StepGroup } from '@/presentation/components/ui/step-group';
 import { TimerIcon } from '@/presentation/components/ui/timer-icon';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
+import { useApiService } from '@/presentation/hooks/use-api-service';
 
 const RESEND_SECONDS = 21;
 const CODE_LENGTH = 6;
 
 export function LoginEmailCodePage() {
   const router = useRouter();
+  const api = useApiService();
+  const { setVerificationToken, setPhone, setEmail, setMethod, draft } = useAuthDraft();
   const params = useLocalSearchParams<{
     email?: string;
     phone?: string;
     method?: string;
   }>();
   const method = parseAuthMethod(params.method);
-  const email = paramString(params.email);
-  const phone = paramString(params.phone);
+  const email = paramString(params.email) || draft.email;
+  const phone = paramString(params.phone) || draft.phone;
   const step = getAuthStep(method, 'code');
 
   const [code, setCode] = useState('');
   const [error, setError] = useState<string | undefined>();
   const [secondsLeft, setSecondsLeft] = useState(RESEND_SECONDS);
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const phoneDisplay = useMemo(() => formatBrazilPhoneDisplay(phone), [phone]);
   const canContinue = code.replace(/\D/g, '').length === CODE_LENGTH;
@@ -67,31 +75,62 @@ export function LoginEmailCodePage() {
     }
   }
 
-  function handleResend() {
-    if (!canResend) {
+  async function handleResend() {
+    if (!canResend || resending) {
       return;
     }
 
-    setSecondsLeft(RESEND_SECONDS);
-    setError(undefined);
-    setCode('');
-    // Backend wiring comes later
+    setResending(true);
+    try {
+      await api.modules.auth.sendOtp(phone);
+      setSecondsLeft(RESEND_SECONDS);
+      setError(undefined);
+      setCode('');
+    } catch (err) {
+      Alert.alert(
+        'Erro',
+        getErrorMessage(err, 'Não foi possível reenviar o código.'),
+      );
+    } finally {
+      setResending(false);
+    }
   }
 
-  function handleContinue() {
-    if (!canContinue) {
+  async function handleContinue() {
+    if (!canContinue || loading) {
       return;
     }
 
+    setLoading(true);
     setError(undefined);
-    router.push({
-      pathname: '/login-email-profile',
-      params: {
-        method,
-        email,
-        phone,
-      },
-    });
+    try {
+      const result = await api.modules.auth.verifyOtp(phone, code);
+      setVerificationToken(result.verificationToken);
+      setPhone(result.phone);
+      setEmail(email);
+      setMethod(method);
+
+      if (result.phoneRegistered) {
+        router.push({
+          pathname: '/login-password',
+          params: { email },
+        });
+        return;
+      }
+
+      router.push({
+        pathname: '/login-email-profile',
+        params: {
+          method,
+          email,
+          phone: result.phone,
+        },
+      });
+    } catch (err) {
+      setError(getErrorMessage(err, 'Código inválido'));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -101,11 +140,13 @@ export function LoginEmailCodePage() {
 
         <KeyboardAvoidingView
           style={styles.flex}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+          >
             <Image
               source={require('@/assets/images/auth/logo.png')}
               style={styles.logo}
@@ -118,6 +159,7 @@ export function LoginEmailCodePage() {
                 <Text style={styles.title}>Código do WhatsApp!</Text>
                 <Text style={styles.subtitle}>Enviamos um código de 6 dígitos para:</Text>
                 <Text style={styles.phone}>{phoneDisplay || '—'}</Text>
+                <Text style={styles.devHint}>Em desenvolvimento use o código 000000</Text>
               </View>
 
               <OtpField
@@ -131,13 +173,16 @@ export function LoginEmailCodePage() {
                 label="Validar Código"
                 variant="filled"
                 disabled={!canContinue}
+                loading={loading}
                 onPress={handleContinue}
               />
             </View>
 
             {canResend ? (
-              <Pressable accessibilityRole="link" onPress={handleResend}>
-                <Text style={styles.resendLink}>Reenviar código</Text>
+              <Pressable accessibilityRole="link" onPress={handleResend} disabled={resending}>
+                <Text style={styles.resendLink}>
+                  {resending ? 'Reenviando…' : 'Reenviar código'}
+                </Text>
               </Pressable>
             ) : (
               <View style={styles.resendRow}>
@@ -212,6 +257,12 @@ const styles = StyleSheet.create({
     color: OttoColors.text,
     textAlign: 'center',
     alignSelf: 'stretch',
+    marginTop: 8,
+  },
+  devHint: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+    textAlign: 'center',
     marginTop: 8,
   },
   resendRow: {

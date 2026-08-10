@@ -1,7 +1,12 @@
+import { ApiError } from '@/infra/http/api-error';
+import { getSessionToken } from '@/infra/auth/session-store';
+
 export type HttpRequestConfig = {
   headers?: Record<string, string>;
   signal?: AbortSignal;
   params?: Record<string, string | number | boolean | undefined>;
+  /** Skip attaching Bearer token */
+  skipAuth?: boolean;
 };
 
 export interface IHttpClient {
@@ -53,25 +58,50 @@ export class HttpClient implements IHttpClient {
     method: string,
     url: string,
     body?: unknown,
-    config?: HttpRequestConfig
+    config?: HttpRequestConfig,
   ): Promise<T> {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...config?.headers,
+    };
+
+    if (!config?.skipAuth) {
+      const token = await getSessionToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+    }
+
     const response = await fetch(`${this.baseUrl}${buildUrl(url, config?.params)}`, {
       method,
-      headers: {
-        Accept: 'application/json',
-        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-        ...config?.headers,
-      },
+      headers,
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: config?.signal,
     });
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(text || `HTTP ${response.status}`);
+      let message = text || `HTTP ${response.status}`;
+      let code = 'HTTP_ERROR';
+
+      try {
+        const json = JSON.parse(text) as { message?: string; error?: string };
+        if (json.message) message = json.message;
+        if (json.error) code = json.error;
+      } catch {
+        // keep raw text
+      }
+
+      throw new ApiError(message, code, response.status);
     }
 
     if (response.status === 204) {
+      return undefined as T;
+    }
+
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) {
       return undefined as T;
     }
 
