@@ -6,11 +6,13 @@ const PREFERENCES_KEY = 'otto.preferences';
 export type AppPreferences = {
   soundsEnabled: boolean;
   vibrationsEnabled: boolean;
+  biometricsEnabled: boolean;
 };
 
 export const DEFAULT_PREFERENCES: AppPreferences = {
   soundsEnabled: false,
   vibrationsEnabled: true,
+  biometricsEnabled: true,
 };
 
 async function setItem(key: string, value: string) {
@@ -42,6 +44,10 @@ export async function getPreferences(): Promise<AppPreferences> {
         typeof parsed.vibrationsEnabled === 'boolean'
           ? parsed.vibrationsEnabled
           : DEFAULT_PREFERENCES.vibrationsEnabled,
+      biometricsEnabled:
+        typeof parsed.biometricsEnabled === 'boolean'
+          ? parsed.biometricsEnabled
+          : DEFAULT_PREFERENCES.biometricsEnabled,
     };
   } catch {
     return { ...DEFAULT_PREFERENCES };

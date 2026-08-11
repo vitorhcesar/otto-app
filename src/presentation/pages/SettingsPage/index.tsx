@@ -266,7 +266,7 @@ export function SettingsPage() {
               icon={
                 <SettingsBiometricsIcon size={16} color={OttoColors.textMid} />
               }
-              onPress={() => comingSoon('Biometria')}
+              onPress={() => router.push('/biometrics')}
             />
             <NavRow
               label="Reportar um problema"

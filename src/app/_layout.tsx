@@ -71,6 +71,10 @@ function RootNavigator() {
           name="api-keys"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="biometrics"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>
