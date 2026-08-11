@@ -63,6 +63,10 @@ function RootNavigator() {
           name="profile"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="preferences"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>

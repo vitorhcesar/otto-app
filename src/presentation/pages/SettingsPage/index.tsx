@@ -239,7 +239,7 @@ export function SettingsPage() {
               icon={
                 <SettingsSlidersIcon size={16} color={OttoColors.textMid} />
               }
-              onPress={() => comingSoon('Preferências')}
+              onPress={() => router.push('/preferences')}
             />
             <NavRow
               label="Assinatura"

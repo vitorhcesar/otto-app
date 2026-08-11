@@ -1,0 +1,227 @@
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import {
+  DEFAULT_PREFERENCES,
+  getPreferences,
+  savePreferences,
+  type AppPreferences,
+} from '@/infra/preferences/preferences-store';
+import { RefreshIcon } from '@/presentation/components/ui/auth-icons';
+import { BackButton } from '@/presentation/components/ui/back-button';
+import {
+  SoundNoteIcon,
+  VibrationPhoneIcon,
+} from '@/presentation/components/ui/preferences-icons';
+import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
+
+type PreferenceRowProps = {
+  title: string;
+  description: string;
+  icon: ReactNode;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+};
+
+function PreferenceRow({
+  title,
+  description,
+  icon,
+  value,
+  onValueChange,
+}: PreferenceRowProps) {
+  return (
+    <View style={[styles.row, value && styles.rowActive]}>
+      <View style={styles.iconWrap}>{icon}</View>
+      <View style={styles.rowCopy}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        <Text style={styles.rowDescription}>{description}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{
+          false: OttoColors.borderStrong,
+          true: OttoColors.primary,
+        }}
+        thumbColor={OttoColors.text}
+        ios_backgroundColor={OttoColors.borderStrong}
+      />
+    </View>
+  );
+}
+
+export function PreferencesPage() {
+  const [preferences, setPreferences] = useState<AppPreferences>(
+    DEFAULT_PREFERENCES,
+  );
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const stored = await getPreferences();
+      if (!cancelled) {
+        setPreferences(stored);
+        setReady(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const persist = useCallback(async (next: AppPreferences) => {
+    setPreferences(next);
+    await savePreferences(next);
+  }, []);
+
+  async function handleToggleSounds(value: boolean) {
+    await persist({ ...preferences, soundsEnabled: value });
+  }
+
+  async function handleToggleVibrations(value: boolean) {
+    await persist({ ...preferences, vibrationsEnabled: value });
+  }
+
+  async function handleRestore() {
+    await persist({ ...DEFAULT_PREFERENCES });
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.topBar}>
+          <BackButton />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Restaurar preferências"
+            onPress={handleRestore}
+            style={({ pressed }) => [
+              styles.restoreButton,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.restoreLabel}>Restaurar</Text>
+            <RefreshIcon size={16} color={OttoColors.textSoft} />
+          </Pressable>
+        </View>
+
+        <View style={styles.headerCopy}>
+          <Text style={styles.title}>Preferências</Text>
+          <Text style={styles.subtitle}>Personalize sua experiência no Otto</Text>
+        </View>
+
+        <View style={[styles.list, !ready && styles.listLoading]}>
+          <PreferenceRow
+            title="Habilitar sons"
+            description="Reproduz efeitos sonoros ao receber notificações, alertas de conta e outros eventos."
+            icon={<SoundNoteIcon size={20} color={OttoColors.textMid} />}
+            value={preferences.soundsEnabled}
+            onValueChange={handleToggleSounds}
+          />
+          <PreferenceRow
+            title="Habilitar vibrações"
+            description="Ativa o feedback tátil do dispositivo ao receber ações e importantes"
+            icon={<VibrationPhoneIcon size={20} color={OttoColors.textMid} />}
+            value={preferences.vibrationsEnabled}
+            onValueChange={handleToggleVibrations}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: OttoColors.background,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 32,
+    gap: 24,
+  },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  restoreButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 4,
+  },
+  restoreLabel: {
+    ...OttoTypography.bodySmall,
+    color: OttoColors.textSoft,
+  },
+  headerCopy: {
+    gap: 4,
+  },
+  title: {
+    ...OttoTypography.h1,
+    color: OttoColors.text,
+  },
+  subtitle: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+  },
+  list: {
+    gap: 12,
+  },
+  listLoading: {
+    opacity: 0.7,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    borderRadius: 12,
+  },
+  rowActive: {
+    backgroundColor: OttoColors.surface,
+  },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    backgroundColor: OttoColors.neutralBlackSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  rowTitle: {
+    fontFamily: OttoFonts.semiBold,
+    fontSize: 16,
+    lineHeight: 26,
+    color: OttoColors.text,
+  },
+  rowDescription: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+});
