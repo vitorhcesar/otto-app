@@ -249,7 +249,7 @@ export function SettingsPage() {
             <NavRow
               label="API Keys"
               icon={<SettingsKeyIcon size={16} color={OttoColors.textMid} />}
-              onPress={() => comingSoon('API Keys')}
+              onPress={() => router.push('/api-keys')}
             />
           </Section>
 

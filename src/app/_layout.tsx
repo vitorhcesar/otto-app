@@ -67,6 +67,10 @@ function RootNavigator() {
           name="preferences"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="api-keys"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>

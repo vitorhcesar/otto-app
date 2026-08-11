@@ -11,12 +11,13 @@ import {
 
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
-type ButtonVariant = 'filled' | 'stroke';
+type ButtonVariant = 'filled' | 'stroke' | 'danger';
 
 export type ButtonProps = Omit<PressableProps, 'children'> & {
   label: string;
   variant?: ButtonVariant;
   leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
 };
@@ -25,6 +26,7 @@ export function Button({
   label,
   variant = 'filled',
   leftIcon,
+  rightIcon,
   loading = false,
   disabled,
   style,
@@ -32,6 +34,7 @@ export function Button({
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const isFilled = variant === 'filled';
+  const isDanger = variant === 'danger';
 
   return (
     <Pressable
@@ -39,15 +42,24 @@ export function Button({
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.base,
-        isFilled ? styles.filled : styles.stroke,
+        isFilled && styles.filled,
+        variant === 'stroke' && styles.stroke,
+        isDanger && styles.danger,
         isFilled && isDisabled && styles.filledDisabled,
         pressed && !isDisabled && styles.pressed,
         style,
       ]}
-      {...rest}>
+      {...rest}
+    >
       {loading ? (
         <ActivityIndicator
-          color={isFilled ? OttoColors.buttonFilledText : OttoColors.text}
+          color={
+            isDanger
+              ? OttoColors.text
+              : isFilled
+                ? OttoColors.buttonFilledText
+                : OttoColors.text
+          }
         />
       ) : (
         <View style={styles.content}>
@@ -57,10 +69,13 @@ export function Button({
               styles.label,
               isFilled && styles.filledLabel,
               isFilled && isDisabled && styles.filledDisabledLabel,
-              !isFilled && styles.strokeLabel,
-            ]}>
+              variant === 'stroke' && styles.strokeLabel,
+              isDanger && styles.dangerLabel,
+            ]}
+          >
             {label}
           </Text>
+          {rightIcon ? <View style={styles.iconSlot}>{rightIcon}</View> : null}
         </View>
       )}
     </Pressable>
@@ -88,6 +103,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: OttoColors.borderStrong,
   },
+  danger: {
+    backgroundColor: OttoColors.danger,
+  },
   pressed: {
     opacity: 0.85,
   },
@@ -114,6 +132,9 @@ const styles = StyleSheet.create({
     color: OttoColors.textDisabled,
   },
   strokeLabel: {
+    color: OttoColors.text,
+  },
+  dangerLabel: {
     color: OttoColors.text,
   },
 });
