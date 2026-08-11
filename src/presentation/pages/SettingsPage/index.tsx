@@ -15,6 +15,7 @@ import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { BackButton } from '@/presentation/components/ui/back-button';
 import { ProfileAvatarControl } from '@/presentation/components/ui/profile-avatar-control';
+import { ReportProblemSheet } from '@/presentation/components/ui/report-problem-sheet';
 import {
   SettingsBiometricsIcon,
   SettingsCardIcon,
@@ -89,6 +90,7 @@ export function SettingsPage() {
   const { profile, user, signOut, updateAvatar } = useAuthSession();
   const { resetDraft } = useAuthDraft();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [reportSheetOpen, setReportSheetOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<IAvatarOption>(() =>
     getAvatarOption(profile?.avatarKey, DEFAULT_AVATARS[0]),
   );
@@ -269,7 +271,7 @@ export function SettingsPage() {
               icon={
                 <SettingsReportIcon size={16} color={OttoColors.textMid} />
               }
-              onPress={() => comingSoon('Reportar um problema')}
+              onPress={() => setReportSheetOpen(true)}
             />
           </Section>
 
@@ -301,6 +303,11 @@ export function SettingsPage() {
           <Text style={styles.version}>{appVersionLabel()}</Text>
         </View>
       </ScrollView>
+
+      <ReportProblemSheet
+        visible={reportSheetOpen}
+        onClose={() => setReportSheetOpen(false)}
+      />
     </SafeAreaView>
   );
 }
