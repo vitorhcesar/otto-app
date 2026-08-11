@@ -11,13 +11,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import {
-  BackChevronIcon,
   ExpenseArrowIcon,
   FilterSlidersIcon,
   IncomeArrowIcon,
   PlusIcon,
   SearchIcon,
 } from '@/presentation/components/ui/activities-icons';
+import { BackButton } from '@/presentation/components/ui/back-button';
 import { EyeClosedIcon, EyeOpenIcon } from '@/presentation/components/ui/eye-icons';
 import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
 
@@ -82,9 +82,7 @@ export function ActivitiesPage() {
       >
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <Pressable accessibilityRole="button" accessibilityLabel="Voltar" hitSlop={8}>
-              <BackChevronIcon size={24} color={OttoColors.text} />
-            </Pressable>
+            <BackButton />
             <Pressable
               style={styles.addButton}
               accessibilityRole="button"

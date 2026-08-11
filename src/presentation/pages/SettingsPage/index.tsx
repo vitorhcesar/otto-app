@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getErrorMessage } from '@/infra/http/get-error-message';
 import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
+import { BackButton } from '@/presentation/components/ui/back-button';
 import { ProfileAvatarControl } from '@/presentation/components/ui/profile-avatar-control';
 import {
   SettingsBiometricsIcon,
@@ -144,6 +145,10 @@ export function SettingsPage() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.header}>
+          <BackButton />
+        </View>
+
         <ProfileAvatarControl
           avatar={selectedAvatar}
           onChange={handleAvatarChange}
@@ -307,9 +312,14 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 16,
-    paddingTop: 40,
+    paddingTop: 8,
     paddingBottom: 24,
     gap: 32,
+    alignItems: 'center',
+  },
+  header: {
+    alignSelf: 'stretch',
+    flexDirection: 'row',
     alignItems: 'center',
   },
   body: {

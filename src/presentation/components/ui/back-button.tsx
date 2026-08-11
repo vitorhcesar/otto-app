@@ -1,0 +1,53 @@
+import { useRouter, type Href } from 'expo-router';
+import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
+
+import { BackChevronIcon } from '@/presentation/components/ui/activities-icons';
+import { OttoColors } from '@/presentation/constants/theme';
+
+export type BackButtonProps = Omit<PressableProps, 'children' | 'onPress'> & {
+  onPress?: () => void;
+  /** Used when there is no history to go back to */
+  fallbackHref?: Href;
+  size?: number;
+  color?: string;
+  style?: StyleProp<ViewStyle>;
+};
+
+/** Standard navigation back control used across authenticated screens. */
+export function BackButton({
+  onPress,
+  fallbackHref = '/(tabs)',
+  size = 24,
+  color = OttoColors.text,
+  accessibilityLabel = 'Voltar',
+  hitSlop = 8,
+  ...rest
+}: BackButtonProps) {
+  const router = useRouter();
+
+  function handlePress() {
+    if (onPress) {
+      onPress();
+      return;
+    }
+
+    if (router.canGoBack()) {
+      router.back();
+      return;
+    }
+
+    router.replace(fallbackHref);
+  }
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      hitSlop={hitSlop}
+      onPress={handlePress}
+      {...rest}
+    >
+      <BackChevronIcon size={size} color={color} />
+    </Pressable>
+  );
+}
