@@ -12,7 +12,7 @@ export type AppPreferences = {
 export const DEFAULT_PREFERENCES: AppPreferences = {
   soundsEnabled: false,
   vibrationsEnabled: true,
-  biometricsEnabled: true,
+  biometricsEnabled: false,
 };
 
 async function setItem(key: string, value: string) {
