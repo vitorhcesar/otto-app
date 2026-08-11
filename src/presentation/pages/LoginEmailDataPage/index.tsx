@@ -1,11 +1,9 @@
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -21,12 +19,9 @@ import {
 } from "@/presentation/auth/auth-flow";
 import { useAuthDraft } from "@/presentation/auth/auth-draft-context";
 import { useAuthSession } from "@/presentation/auth/auth-session-context";
-import {
-  RefreshIcon,
-  ShieldCheckIcon,
-} from "@/presentation/components/ui/auth-icons";
-import { AvatarPickerSheet } from "@/presentation/components/ui/avatar-picker-sheet";
+import { ShieldCheckIcon } from "@/presentation/components/ui/auth-icons";
 import { Button } from "@/presentation/components/ui/button";
+import { ProfileAvatarControl } from "@/presentation/components/ui/profile-avatar-control";
 import { StepGroup } from "@/presentation/components/ui/step-group";
 import { TextField } from "@/presentation/components/ui/text-field";
 import {
@@ -115,7 +110,6 @@ export function LoginEmailDataPage() {
   const [fullName, setFullName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [cpf, setCpf] = useState("");
-  const [avatarPickerOpen, setAvatarPickerOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState<IAvatarOption>(
     DEFAULT_AVATARS[5],
   );
@@ -184,22 +178,10 @@ export function LoginEmailDataPage() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <View style={styles.avatarWrap}>
-              <Image
-                source={selectedAvatar.source}
-                style={styles.avatar}
-                contentFit="cover"
-                accessibilityLabel="Foto de perfil"
-              />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Trocar foto de perfil"
-                style={styles.avatarAction}
-                onPress={() => setAvatarPickerOpen(true)}
-              >
-                <RefreshIcon size={12} color={OttoColors.buttonFilledText} />
-              </Pressable>
-            </View>
+            <ProfileAvatarControl
+              avatar={selectedAvatar}
+              onChange={setSelectedAvatar}
+            />
 
             <View style={styles.form}>
               <View style={styles.headerCopy}>
@@ -258,13 +240,6 @@ export function LoginEmailDataPage() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-
-      <AvatarPickerSheet
-        visible={avatarPickerOpen}
-        selectedId={selectedAvatar.id}
-        onClose={() => setAvatarPickerOpen(false)}
-        onConfirm={setSelectedAvatar}
-      />
     </View>
   );
 }
@@ -295,28 +270,6 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 400,
     alignSelf: "center",
-  },
-  avatarWrap: {
-    width: 112,
-    height: 112,
-    position: "relative",
-  },
-  avatar: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
-    backgroundColor: OttoColors.borderStrong,
-  },
-  avatarAction: {
-    position: "absolute",
-    right: 0,
-    bottom: 0,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: OttoColors.text,
-    alignItems: "center",
-    justifyContent: "center",
   },
   form: {
     alignSelf: "stretch",

@@ -55,6 +55,10 @@ function RootNavigator() {
       <Stack.Protected guard={isAuthenticated}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="home" />
+        <Stack.Screen
+          name="settings"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>

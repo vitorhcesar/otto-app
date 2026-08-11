@@ -1,13 +1,15 @@
 import { BlurTargetView } from 'expo-blur';
 import { Tabs, usePathname, useRouter } from 'expo-router';
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { BlurTargetProvider } from '@/presentation/blur/blur-target-context';
 import {
   AppBottomBar,
   type AppTabKey,
 } from '@/presentation/components/app-bottom-bar';
+import { getAvatarOption } from '@/presentation/constants/avatars';
 import { OttoColors } from '@/presentation/constants/theme';
 
 /** Espaço reservado para AI bar + nav + safe area */
@@ -45,6 +47,11 @@ export default function TabsLayout() {
 function TabsChromeBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { profile } = useAuthSession();
+  const settingsAvatarSource = useMemo(
+    () => getAvatarOption(profile?.avatarKey).source,
+    [profile?.avatarKey],
+  );
 
   const activeTab: AppTabKey = pathname.includes('community')
     ? 'community'
@@ -56,6 +63,7 @@ function TabsChromeBar() {
     <View style={styles.tabBarOverlay} pointerEvents="box-none">
       <AppBottomBar
         activeTab={activeTab}
+        settingsAvatarSource={settingsAvatarSource}
         onTabPress={(tab) => {
           if (tab === 'home') {
             router.navigate('/(tabs)');
@@ -67,6 +75,7 @@ function TabsChromeBar() {
           }
           router.navigate('/(tabs)/community');
         }}
+        onSettingsPress={() => router.push('/settings')}
       />
     </View>
   );

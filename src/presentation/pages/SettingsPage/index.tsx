@@ -1,0 +1,440 @@
+import Constants from 'expo-constants';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { getErrorMessage } from '@/infra/http/get-error-message';
+import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
+import { useAuthSession } from '@/presentation/auth/auth-session-context';
+import { ProfileAvatarControl } from '@/presentation/components/ui/profile-avatar-control';
+import {
+  SettingsBiometricsIcon,
+  SettingsCardIcon,
+  SettingsChevronIcon,
+  SettingsKeyIcon,
+  SettingsLogoutIcon,
+  SettingsPasswordIcon,
+  SettingsProfileIcon,
+  SettingsReportIcon,
+  SettingsRocketIcon,
+  SettingsSlidersIcon,
+  SettingsStarIcon,
+  SettingsSupportIcon,
+} from '@/presentation/components/ui/settings-icons';
+import {
+  DEFAULT_AVATARS,
+  getAvatarOption,
+  type IAvatarOption,
+} from '@/presentation/constants/avatars';
+import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
+
+const BANK_STACK = [
+  { id: 'santander', color: '#EC0000' },
+  { id: 'bb', color: '#FFEF00' },
+  { id: 'c6', color: '#242424' },
+  { id: 'itau', color: '#EC7000' },
+] as const;
+
+type NavRowProps = {
+  label: string;
+  icon: ReactNode;
+  onPress?: () => void;
+};
+
+function NavRow({ label, icon, onPress }: NavRowProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.navRow, pressed && styles.pressed]}
+    >
+      <View style={styles.navRowLeft}>
+        <View style={styles.iconSlot}>{icon}</View>
+        <Text style={styles.navLabel}>{label}</Text>
+      </View>
+      <SettingsChevronIcon size={16} color={OttoColors.textMid} />
+    </Pressable>
+  );
+}
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.sectionList}>{children}</View>
+    </View>
+  );
+}
+
+function appVersionLabel() {
+  const version =
+    Constants.expoConfig?.version ?? Constants.nativeAppVersion ?? '1.0.0';
+  const build =
+    Constants.nativeBuildVersion ??
+    Constants.expoConfig?.ios?.buildNumber ??
+    Constants.expoConfig?.android?.versionCode ??
+    '0';
+  return `V.${version} (${build})`;
+}
+
+export function SettingsPage() {
+  const { profile, user, signOut, updateAvatar } = useAuthSession();
+  const { resetDraft } = useAuthDraft();
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [selectedAvatar, setSelectedAvatar] = useState<IAvatarOption>(() =>
+    getAvatarOption(profile?.avatarKey, DEFAULT_AVATARS[0]),
+  );
+
+  useEffect(() => {
+    setSelectedAvatar(getAvatarOption(profile?.avatarKey, DEFAULT_AVATARS[0]));
+  }, [profile?.avatarKey]);
+
+  const displayName = useMemo(() => {
+    return (
+      profile?.displayName?.trim() ||
+      profile?.fullName?.trim() ||
+      user?.name?.trim() ||
+      'Usuário'
+    );
+  }, [profile?.displayName, profile?.fullName, user?.name]);
+
+  async function handleAvatarChange(avatar: IAvatarOption) {
+    const previous = selectedAvatar;
+    setSelectedAvatar(avatar);
+    try {
+      await updateAvatar(avatar.id);
+    } catch (error) {
+      setSelectedAvatar(previous);
+      Alert.alert(
+        'Erro',
+        getErrorMessage(error, 'Não foi possível atualizar o avatar.'),
+      );
+    }
+  }
+
+  async function handleLogout() {
+    if (loggingOut) {
+      return;
+    }
+    setLoggingOut(true);
+    try {
+      await signOut();
+      resetDraft();
+    } catch {
+      Alert.alert('Erro', 'Não foi possível sair. Tente novamente.');
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
+  function comingSoon(feature: string) {
+    Alert.alert(feature, 'Em breve.');
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <ProfileAvatarControl
+          avatar={selectedAvatar}
+          onChange={handleAvatarChange}
+          size={80}
+        />
+
+        <View style={styles.body}>
+          <Text style={styles.name}>{displayName}</Text>
+
+          <View style={styles.topActions}>
+            <View style={styles.summaryRow}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => comingSoon('Plano')}
+                style={({ pressed }) => [
+                  styles.featureCard,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <SettingsRocketIcon size={16} color={OttoColors.textMid} />
+                <View style={styles.featureCopy}>
+                  <Text style={styles.featureTitle}>Grátis</Text>
+                  <Text style={styles.featureSubtitle}>Plano</Text>
+                </View>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => comingSoon('Conexões')}
+                style={({ pressed }) => [
+                  styles.featureCard,
+                  pressed && styles.pressed,
+                ]}
+              >
+                <View style={styles.bankStack}>
+                  {BANK_STACK.map((bank, index) => (
+                    <View
+                      key={bank.id}
+                      style={[
+                        styles.bankDot,
+                        {
+                          backgroundColor: bank.color,
+                          marginLeft: index === 0 ? 0 : -5,
+                          zIndex: BANK_STACK.length - index,
+                          borderColor: OttoColors.surface,
+                        },
+                      ]}
+                    />
+                  ))}
+                  <View
+                    style={[
+                      styles.bankDot,
+                      styles.bankMore,
+                      { marginLeft: -5, zIndex: 0 },
+                    ]}
+                  >
+                    <Text style={styles.bankMoreText}>+1</Text>
+                  </View>
+                </View>
+                <View style={styles.featureCopy}>
+                  <Text style={styles.featureTitle}>6 Bancos</Text>
+                  <Text style={styles.featureSubtitle}>Conexões</Text>
+                </View>
+              </Pressable>
+            </View>
+
+            <NavRow
+              label="Avalie o Otto"
+              icon={<SettingsStarIcon size={16} color={OttoColors.textMid} />}
+              onPress={() => comingSoon('Avalie o Otto')}
+            />
+          </View>
+
+          <Section title="Geral">
+            <NavRow
+              label="Perfil"
+              icon={
+                <SettingsProfileIcon size={16} color={OttoColors.textMid} />
+              }
+              onPress={() => comingSoon('Perfil')}
+            />
+            <NavRow
+              label="Preferências"
+              icon={
+                <SettingsSlidersIcon size={16} color={OttoColors.textMid} />
+              }
+              onPress={() => comingSoon('Preferências')}
+            />
+            <NavRow
+              label="Assinatura"
+              icon={<SettingsCardIcon size={16} color={OttoColors.textMid} />}
+              onPress={() => comingSoon('Assinatura')}
+            />
+            <NavRow
+              label="API Keys"
+              icon={<SettingsKeyIcon size={16} color={OttoColors.textMid} />}
+              onPress={() => comingSoon('API Keys')}
+            />
+          </Section>
+
+          <Section title="Seguranças">
+            <NavRow
+              label="Alterar senha"
+              icon={
+                <SettingsPasswordIcon size={16} color={OttoColors.textMid} />
+              }
+              onPress={() => comingSoon('Alterar senha')}
+            />
+            <NavRow
+              label="Biometria"
+              icon={
+                <SettingsBiometricsIcon size={16} color={OttoColors.textMid} />
+              }
+              onPress={() => comingSoon('Biometria')}
+            />
+            <NavRow
+              label="Reportar um problema"
+              icon={
+                <SettingsReportIcon size={16} color={OttoColors.textMid} />
+              }
+              onPress={() => comingSoon('Reportar um problema')}
+            />
+          </Section>
+
+          <Section title="Suporte">
+            <NavRow
+              label="Falar com suporte"
+              icon={
+                <SettingsSupportIcon size={16} color={OttoColors.textMid} />
+              }
+              onPress={() => comingSoon('Falar com suporte')}
+            />
+          </Section>
+
+          <Pressable
+            accessibilityRole="button"
+            disabled={loggingOut}
+            onPress={handleLogout}
+            style={({ pressed }) => [
+              styles.logoutButton,
+              pressed && !loggingOut && styles.pressed,
+            ]}
+          >
+            <Text style={styles.logoutLabel}>
+              {loggingOut ? 'Saindo…' : 'Sair'}
+            </Text>
+            <SettingsLogoutIcon size={16} color={OttoColors.text} />
+          </Pressable>
+
+          <Text style={styles.version}>{appVersionLabel()}</Text>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: OttoColors.background,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    paddingBottom: 24,
+    gap: 32,
+    alignItems: 'center',
+  },
+  body: {
+    alignSelf: 'stretch',
+    gap: 24,
+    alignItems: 'center',
+  },
+  name: {
+    ...OttoTypography.h1,
+    color: OttoColors.text,
+    textAlign: 'center',
+    alignSelf: 'stretch',
+  },
+  topActions: {
+    alignSelf: 'stretch',
+    gap: 16,
+  },
+  summaryRow: {
+    flexDirection: 'row',
+    gap: 16,
+    alignSelf: 'stretch',
+  },
+  featureCard: {
+    flex: 1,
+    backgroundColor: OttoColors.surface,
+    borderRadius: 12,
+    padding: 12,
+    gap: 6,
+  },
+  featureCopy: {
+    gap: 2,
+  },
+  featureTitle: {
+    fontFamily: OttoFonts.semiBold,
+    fontSize: 16,
+    lineHeight: 26,
+    color: OttoColors.textMid,
+  },
+  featureSubtitle: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+  },
+  bankStack: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: 20,
+  },
+  bankDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  bankMore: {
+    backgroundColor: OttoColors.text,
+    borderColor: '#212220',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bankMoreText: {
+    ...OttoTypography.captionSmall,
+    color: OttoColors.background,
+  },
+  navRow: {
+    alignSelf: 'stretch',
+    height: 50,
+    backgroundColor: OttoColors.surface,
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  navRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  iconSlot: {
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  navLabel: {
+    fontFamily: OttoFonts.semiBold,
+    fontSize: 16,
+    lineHeight: 26,
+    color: OttoColors.textMid,
+  },
+  section: {
+    alignSelf: 'stretch',
+    gap: 16,
+  },
+  sectionTitle: {
+    fontFamily: OttoFonts.semiBold,
+    fontSize: 14,
+    lineHeight: 22,
+    color: OttoColors.text,
+  },
+  sectionList: {
+    gap: 12,
+  },
+  logoutButton: {
+    alignSelf: 'stretch',
+    borderWidth: 1,
+    borderColor: OttoColors.borderStrong,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  logoutLabel: {
+    ...OttoTypography.bodySmall,
+    color: OttoColors.text,
+  },
+  version: {
+    ...OttoTypography.captionSmall,
+    color: OttoColors.textSoft,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+});

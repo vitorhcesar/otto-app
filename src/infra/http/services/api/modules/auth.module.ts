@@ -74,6 +74,7 @@ export interface IAuthModule {
   login(email: string, password: string): Promise<AuthResult>;
   logout(): Promise<void>;
   me(): Promise<MeResponse>;
+  updateAvatar(avatarKey: string): Promise<MeResponse>;
 }
 
 export class AuthModule extends BaseApiModule implements IAuthModule {
@@ -119,5 +120,9 @@ export class AuthModule extends BaseApiModule implements IAuthModule {
 
   me() {
     return this.http.get<MeResponse>('/api/v1/auth/me');
+  }
+
+  updateAvatar(avatarKey: string) {
+    return this.http.patch<MeResponse>('/api/v1/auth/me/avatar', { avatarKey });
   }
 }

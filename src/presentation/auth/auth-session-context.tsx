@@ -11,6 +11,7 @@ type AuthSessionContextValue = {
   profile: AuthProfile | null;
   applyAuthResult: (result: AuthResult) => Promise<void>;
   refreshSession: () => Promise<void>;
+  updateAvatar: (avatarKey: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -65,6 +66,15 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     setProfile(result.profile);
   }, []);
 
+  const updateAvatar = useCallback(
+    async (avatarKey: string) => {
+      const me = await api.modules.auth.updateAvatar(avatarKey);
+      setUser(me.user);
+      setProfile(me.profile);
+    },
+    [api.modules.auth],
+  );
+
   const signOut = useCallback(async () => {
     try {
       // Não travar o UI se a API demorar/falhar — limpa sessão local no finally.
@@ -91,9 +101,10 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       profile,
       applyAuthResult,
       refreshSession,
+      updateAvatar,
       signOut,
     }),
-    [isLoading, user, profile, applyAuthResult, refreshSession, signOut],
+    [isLoading, user, profile, applyAuthResult, refreshSession, updateAvatar, signOut],
   );
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>;

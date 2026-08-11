@@ -16,3 +16,11 @@ export const DEFAULT_AVATARS: IAvatarOption[] = [
   { id: 'avatar-7', source: require('@/assets/images/auth/avatar-7.png') },
   { id: 'avatar-8', source: require('@/assets/images/auth/avatar-8.png') },
 ];
+
+export function getAvatarOption(
+  avatarKey: string | null | undefined,
+  fallback: IAvatarOption = DEFAULT_AVATARS[0],
+): IAvatarOption {
+  const match = DEFAULT_AVATARS.find((avatar) => avatar.id === avatarKey);
+  return match ?? fallback;
+}

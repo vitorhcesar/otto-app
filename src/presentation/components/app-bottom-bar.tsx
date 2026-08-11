@@ -1,4 +1,4 @@
-import { Image } from "expo-image";
+import { Image, type ImageSource } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -19,12 +19,16 @@ export type AppTabKey = "home" | "activities" | "community";
 type AppBottomBarProps = {
   activeTab: AppTabKey;
   onTabPress: (tab: AppTabKey) => void;
+  onSettingsPress?: () => void;
+  settingsAvatarSource?: ImageSource;
   communityBadgeCount?: number;
 };
 
 export function AppBottomBar({
   activeTab,
   onTabPress,
+  onSettingsPress,
+  settingsAvatarSource,
   communityBadgeCount = 2,
 }: AppBottomBarProps) {
   const insets = useSafeAreaInsets();
@@ -127,15 +131,22 @@ export function AppBottomBar({
           </Pressable>
         </GlassSurface>
 
-        <Pressable accessibilityRole="button">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Configurações"
+          onPress={onSettingsPress}
+        >
           <GlassSurface
             style={styles.logoButton}
             contentStyle={styles.logoButtonContent}
           >
             <Image
-              source={require("@/assets/images/auth/logo.png")}
-              style={styles.logo}
-              contentFit="contain"
+              source={
+                settingsAvatarSource ??
+                require("@/assets/images/auth/avatar-1.png")
+              }
+              style={styles.settingsAvatar}
+              contentFit="cover"
             />
           </GlassSurface>
         </Pressable>
@@ -271,9 +282,11 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+    borderRadius: 40,
   },
-  logo: {
-    width: 28,
-    height: 28,
+  settingsAvatar: {
+    width: 56,
+    height: 56,
   },
 });
