@@ -1,0 +1,231 @@
+import { useMemo } from 'react';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { useAuthSession } from '@/presentation/auth/auth-session-context';
+import { ShieldCheckIcon } from '@/presentation/components/ui/auth-icons';
+import { BackButton } from '@/presentation/components/ui/back-button';
+import {
+  TrashIcon,
+  VerifiedBadgeIcon,
+} from '@/presentation/components/ui/profile-icons';
+import { TextField } from '@/presentation/components/ui/text-field';
+import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
+
+function formatBirthDateDisplay(value: string | null | undefined) {
+  if (!value) {
+    return '—';
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}/.test(value)) {
+    const [year, month, day] = value.slice(0, 10).split('-');
+    return `${day}/${month}/${year}`;
+  }
+
+  const digits = value.replace(/\D/g, '');
+  if (digits.length === 8) {
+    return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  }
+
+  return value;
+}
+
+/** Masks CPF as 000.****.***-25 (keeps first 3 and last 2 digits). */
+function maskCpf(value: string | null | undefined) {
+  if (!value) {
+    return '—';
+  }
+
+  const digits = value.replace(/\D/g, '');
+  if (digits.length < 5) {
+    return digits || '—';
+  }
+
+  return `${digits.slice(0, 3)}.****.***-${digits.slice(-2)}`;
+}
+
+function formatWhatsAppDisplay(phone: string | null | undefined) {
+  if (!phone) {
+    return '—';
+  }
+
+  const digits = phone.replace(/\D/g, '');
+  const national =
+    digits.startsWith('55') && digits.length > 11 ? digits.slice(2) : digits;
+
+  if (national.length === 11) {
+    return `+55 ${national.slice(0, 2)} ${national.slice(2, 7)}-${national.slice(7)}`;
+  }
+
+  if (national.length === 10) {
+    return `+55 ${national.slice(0, 2)} ${national.slice(2, 6)}-${national.slice(6)}`;
+  }
+
+  return phone.startsWith('+') ? phone : `+${digits}`;
+}
+
+export function ProfilePage() {
+  const { profile, user } = useAuthSession();
+
+  const fullName =
+    profile?.fullName?.trim() || user?.name?.trim() || '—';
+  const birthDate = formatBirthDateDisplay(profile?.birthDate);
+  const cpf = maskCpf(profile?.cpf);
+  const email = user?.email?.trim() || '—';
+  const whatsapp = formatWhatsAppDisplay(user?.phoneNumber);
+  const phoneVerified = Boolean(user?.phoneNumberVerified);
+  const emailVerified = Boolean(user?.email);
+
+  const verifiedBadge = useMemo(
+    () => <VerifiedBadgeIcon size={16} color={OttoColors.primary} />,
+    [],
+  );
+
+  function handleDeleteAccount() {
+    Alert.alert('Excluir conta', 'Em breve.');
+  }
+
+  return (
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.header}>
+          <BackButton />
+          <View style={styles.headerCopy}>
+            <Text style={styles.title}>Perfil</Text>
+            <Text style={styles.subtitle}>Edite suas informações pessoais</Text>
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informações pessoais</Text>
+          <View style={styles.fields}>
+            <TextField
+              label="Nome completo"
+              value={fullName}
+              editable={false}
+            />
+            <TextField
+              label="Data de nascimento"
+              value={birthDate}
+              editable={false}
+            />
+            <TextField label="CPF" value={cpf} editable={false} />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Informações de contato</Text>
+          <View style={styles.fields}>
+            <TextField
+              label="E-mail"
+              value={email}
+              editable={false}
+              trailing={emailVerified ? verifiedBadge : undefined}
+            />
+            <TextField
+              label="WhatsApp"
+              value={whatsapp}
+              editable={false}
+              trailing={phoneVerified ? verifiedBadge : undefined}
+            />
+          </View>
+        </View>
+
+        <View style={styles.securityRow}>
+          <ShieldCheckIcon size={16} color={OttoColors.primary} />
+          <Text style={styles.securityText}>
+            Dados seguros pela LGPD com criptografia
+          </Text>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleDeleteAccount}
+          style={({ pressed }) => [
+            styles.deleteButton,
+            pressed && styles.pressed,
+          ]}
+        >
+          <Text style={styles.deleteLabel}>Excluir conta</Text>
+          <TrashIcon size={16} color={OttoColors.textSoft} />
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: OttoColors.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingTop: 8,
+    paddingBottom: 32,
+    gap: 32,
+  },
+  header: {
+    gap: 16,
+  },
+  headerCopy: {
+    gap: 4,
+  },
+  title: {
+    ...OttoTypography.h1,
+    color: OttoColors.text,
+  },
+  subtitle: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+  },
+  section: {
+    gap: 16,
+  },
+  sectionTitle: {
+    fontFamily: OttoFonts.semiBold,
+    fontSize: 14,
+    lineHeight: 22,
+    color: OttoColors.text,
+  },
+  fields: {
+    gap: 16,
+  },
+  securityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  securityText: {
+    ...OttoTypography.caption,
+    color: OttoColors.textSoft,
+  },
+  deleteButton: {
+    marginTop: 'auto',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 8,
+  },
+  deleteLabel: {
+    ...OttoTypography.bodySmall,
+    color: OttoColors.textSoft,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+});

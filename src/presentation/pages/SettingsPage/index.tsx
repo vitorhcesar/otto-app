@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Alert,
@@ -87,6 +88,7 @@ function appVersionLabel() {
 }
 
 export function SettingsPage() {
+  const router = useRouter();
   const { profile, user, signOut, updateAvatar } = useAuthSession();
   const { resetDraft } = useAuthDraft();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -230,7 +232,7 @@ export function SettingsPage() {
               icon={
                 <SettingsProfileIcon size={16} color={OttoColors.textMid} />
               }
-              onPress={() => comingSoon('Perfil')}
+              onPress={() => router.push('/profile')}
             />
             <NavRow
               label="Preferências"
