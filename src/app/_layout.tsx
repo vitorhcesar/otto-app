@@ -79,6 +79,10 @@ function RootNavigator() {
           name="change-password"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="subscription"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>

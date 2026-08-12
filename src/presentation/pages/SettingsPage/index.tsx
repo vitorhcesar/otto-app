@@ -166,7 +166,7 @@ export function SettingsPage() {
             <View style={styles.summaryRow}>
               <Pressable
                 accessibilityRole="button"
-                onPress={() => comingSoon('Plano')}
+                onPress={() => router.push('/subscription')}
                 style={({ pressed }) => [
                   styles.featureCard,
                   pressed && styles.pressed,
@@ -244,7 +244,7 @@ export function SettingsPage() {
             <NavRow
               label="Assinatura"
               icon={<SettingsCardIcon size={16} color={OttoColors.textMid} />}
-              onPress={() => comingSoon('Assinatura')}
+              onPress={() => router.push('/subscription')}
             />
             <NavRow
               label="API Keys"
