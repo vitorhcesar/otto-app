@@ -87,6 +87,10 @@ function RootNavigator() {
           name="subscription-pro"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="bank-connection"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>

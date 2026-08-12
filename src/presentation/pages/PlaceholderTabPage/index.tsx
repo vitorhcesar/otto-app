@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,11 +12,14 @@ export function PlaceholderTabPage({
   title,
   subtitle,
   showLogout = false,
+  showBankConnection = false,
 }: {
   title: string;
   subtitle?: string;
   showLogout?: boolean;
+  showBankConnection?: boolean;
 }) {
+  const router = useRouter();
   const { signOut } = useAuthSession();
   const { resetDraft } = useAuthDraft();
   const [loading, setLoading] = useState(false);
@@ -38,6 +42,13 @@ export function PlaceholderTabPage({
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        {showBankConnection ? (
+          <Button
+            label="Conectar conta"
+            variant="filled"
+            onPress={() => router.push('/bank-connection')}
+          />
+        ) : null}
         {showLogout ? (
           <Button
             label="Logout"

@@ -6,6 +6,7 @@ export default function HomeTabRoute() {
       title="Home"
       subtitle="Em breve — use a tab Atividades"
       showLogout
+      showBankConnection
     />
   );
 }
