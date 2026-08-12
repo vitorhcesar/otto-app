@@ -1,4 +1,3 @@
-import * as LocalAuthentication from 'expo-local-authentication';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
@@ -16,6 +15,7 @@ import {
   savePreferences,
 } from '@/infra/preferences/preferences-store';
 import {
+  authenticateWithBiometrics,
   getBiometricCapability,
   type BiometricCapability,
 } from '@/presentation/biometrics/biometric-capability';
@@ -88,11 +88,9 @@ export function BiometricsPage() {
     }
 
     try {
-      const result = await LocalAuthentication.authenticateAsync({
-        promptMessage: 'Confirme para habilitar a biometria no Otto',
-        cancelLabel: 'Cancelar',
-        disableDeviceFallback: false,
-      });
+      const result = await authenticateWithBiometrics(
+        'Confirme para habilitar a biometria no Otto',
+      );
 
       if (!result.success) {
         return;

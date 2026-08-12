@@ -75,6 +75,11 @@ export interface IAuthModule {
   logout(): Promise<void>;
   me(): Promise<MeResponse>;
   updateAvatar(avatarKey: string): Promise<MeResponse>;
+  verifyPassword(password: string): Promise<{ ok: true }>;
+  changePassword(input: {
+    newPassword: string;
+    currentPassword?: string;
+  }): Promise<{ ok: true }>;
 }
 
 export class AuthModule extends BaseApiModule implements IAuthModule {
@@ -124,5 +129,15 @@ export class AuthModule extends BaseApiModule implements IAuthModule {
 
   updateAvatar(avatarKey: string) {
     return this.http.patch<MeResponse>('/api/v1/auth/me/avatar', { avatarKey });
+  }
+
+  verifyPassword(password: string) {
+    return this.http.post<{ ok: true }>('/api/v1/auth/me/verify-password', {
+      password,
+    });
+  }
+
+  changePassword(input: { newPassword: string; currentPassword?: string }) {
+    return this.http.patch<{ ok: true }>('/api/v1/auth/me/password', input);
   }
 }

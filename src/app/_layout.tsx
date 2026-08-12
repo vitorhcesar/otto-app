@@ -75,6 +75,10 @@ function RootNavigator() {
           name="biometrics"
           options={{ animation: 'slide_from_right' }}
         />
+        <Stack.Screen
+          name="change-password"
+          options={{ animation: 'slide_from_right' }}
+        />
       </Stack.Protected>
 
       <Stack.Protected guard={!isAuthenticated}>

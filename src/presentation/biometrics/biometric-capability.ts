@@ -109,3 +109,11 @@ export async function getBiometricCapability(): Promise<BiometricCapability> {
     enrolled,
   };
 }
+
+export async function authenticateWithBiometrics(promptMessage: string) {
+  return LocalAuthentication.authenticateAsync({
+    promptMessage,
+    cancelLabel: 'Cancelar',
+    disableDeviceFallback: false,
+  });
+}

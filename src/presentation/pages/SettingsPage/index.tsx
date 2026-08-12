@@ -259,7 +259,7 @@ export function SettingsPage() {
               icon={
                 <SettingsPasswordIcon size={16} color={OttoColors.textMid} />
               }
-              onPress={() => comingSoon('Alterar senha')}
+              onPress={() => router.push('/change-password')}
             />
             <NavRow
               label="Biometria"
