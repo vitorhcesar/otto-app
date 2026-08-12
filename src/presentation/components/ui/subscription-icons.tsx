@@ -1,4 +1,4 @@
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 type IconProps = {
   size?: number;
@@ -23,6 +23,49 @@ export function GhostIcon({ size = 20, color = '#767D73' }: IconProps) {
         d="M10.8 8.4C10.8 8.9 11.2 9.3 11.7 9.3C12.2 9.3 12.6 8.9 12.6 8.4C12.6 7.9 12.2 7.5 11.7 7.5C11.2 7.5 10.8 7.9 10.8 8.4Z"
         fill={color}
       />
+    </Svg>
+  );
+}
+
+export function FeatureCheckIcon({ size = 16, color = '#95FF52' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
+      <Path
+        d="M3.2 8.2L6.4 11.2L12.8 4.4"
+        stroke={color}
+        strokeWidth={1.4}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function ReviewStarIcon({ size = 12, color = '#2FB70D' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 12 12" fill="none">
+      <Path
+        d="M6 1.15L7.2 3.85L10.15 4.15L8 6.2L8.55 9.15L6 7.7L3.45 9.15L4 6.2L1.85 4.15L4.8 3.85L6 1.15Z"
+        fill={color}
+      />
+    </Svg>
+  );
+}
+
+export function PlanRadioIcon({
+  size = 20,
+  selected = false,
+}: {
+  size?: number;
+  selected?: boolean;
+}) {
+  const outer = selected ? '#95FF52' : '#585D56';
+  const innerR = selected ? size * 0.2 : size * 0.325;
+
+  return (
+    <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} fill="none">
+      <Circle cx={size / 2} cy={size / 2} r={size / 2} fill={outer} />
+      <Circle cx={size / 2} cy={size / 2} r={innerR} fill="#0A0B0A" />
     </Svg>
   );
 }

@@ -1,4 +1,5 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { BackButton } from '@/presentation/components/ui/back-button';
@@ -7,9 +8,7 @@ import { GhostIcon } from '@/presentation/components/ui/subscription-icons';
 import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
 
 export function SubscriptionPage() {
-  function handleSubscribe() {
-    Alert.alert('Assinar', 'Em breve.');
-  }
+  const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -34,7 +33,11 @@ export function SubscriptionPage() {
             </Text>
           </View>
 
-          <Button label="Assinar" variant="filled" onPress={handleSubscribe} />
+          <Button
+            label="Assinar"
+            variant="filled"
+            onPress={() => router.push('/subscription-pro')}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
