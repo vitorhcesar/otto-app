@@ -11,7 +11,10 @@
     "ios": {
       "bundleIdentifier": "com.otto.app",
       "icon": "./assets/images/otto-app-icon.png",
-      "backgroundColor": "#0a0b0a"
+      "backgroundColor": "#0a0b0a",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
