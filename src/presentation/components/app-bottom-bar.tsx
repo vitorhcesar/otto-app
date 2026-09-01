@@ -38,7 +38,7 @@ export function AppBottomBar({
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Pergunte ao Otto IA">
-        <GlassSurface style={styles.aiBar} contentStyle={styles.aiBarContent}>
+        <GlassSurface contentStyle={styles.aiBarContent}>
           <AiBarGlow style={styles.aiGlowInBar} />
           <Text style={styles.aiPlaceholder}>Pergunte ao Otto IA</Text>
           <View style={styles.aiIconWrap}>
@@ -125,6 +125,7 @@ export function AppBottomBar({
           onPress={onSettingsPress}
         >
           <GlassSurface
+            padded={false}
             style={styles.logoButton}
             contentStyle={styles.logoButtonContent}
           >
@@ -142,17 +143,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     width: "100%",
   },
-  aiBar: {
-    borderRadius: 40,
-  },
   aiBarContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    overflow: "hidden",
-    position: "relative",
   },
   aiGlowInBar: {
     bottom: -20,
@@ -178,16 +172,11 @@ const styles = StyleSheet.create({
   },
   navPill: {
     flex: 1,
-    borderRadius: 40,
   },
   navPillContent: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    overflow: "hidden",
-    position: "relative",
   },
   navItem: {
     width: 24,
@@ -262,14 +251,11 @@ const styles = StyleSheet.create({
   logoButton: {
     width: 56,
     height: 56,
-    borderRadius: 40,
   },
   logoButtonContent: {
     width: 56,
     height: 56,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden",
-    borderRadius: 40,
   },
 });
