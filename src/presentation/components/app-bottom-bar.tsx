@@ -1,4 +1,4 @@
-import { Image, type ImageSource } from "expo-image";
+import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -7,10 +7,11 @@ import {
   AiBarGlow,
 } from "@/presentation/components/ui/active-tab-glow";
 import {
-  AiWaveIcon,
-  HomeTabIcon,
-  WalletTabIcon,
-} from "@/presentation/components/ui/activities-icons";
+  AiAskGlyph,
+  HomeTabGlyph,
+  OttoMarkGlyph,
+  WalletTabGlyph,
+} from "@/presentation/components/ui/figma-tab-icons";
 import { GlassSurface } from "@/presentation/components/ui/glass-surface";
 import { OttoColors, OttoTypography } from "@/presentation/constants/theme";
 
@@ -20,34 +21,28 @@ type AppBottomBarProps = {
   activeTab: AppTabKey;
   onTabPress: (tab: AppTabKey) => void;
   onSettingsPress?: () => void;
-  settingsAvatarSource?: ImageSource;
   communityBadgeCount?: number;
 };
+
+const INACTIVE_ICON = OttoColors.buttonFilled;
+const ACTIVE_ICON = OttoColors.primarySoft;
 
 export function AppBottomBar({
   activeTab,
   onTabPress,
   onSettingsPress,
-  settingsAvatarSource,
   communityBadgeCount = 2,
 }: AppBottomBarProps) {
   const insets = useSafeAreaInsets();
 
-  const glowOffset =
-    activeTab === "home"
-      ? "15.5%"
-      : activeTab === "activities"
-        ? "57%"
-        : "100%";
-
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-      <Pressable accessibilityRole="button">
+      <Pressable accessibilityRole="button" accessibilityLabel="Pergunte ao Otto IA">
         <GlassSurface style={styles.aiBar} contentStyle={styles.aiBarContent}>
           <AiBarGlow style={styles.aiGlowInBar} />
           <Text style={styles.aiPlaceholder}>Pergunte ao Otto IA</Text>
           <View style={styles.aiIconWrap}>
-            <AiWaveIcon size={22} color={OttoColors.primarySoft} />
+            <AiAskGlyph size={24} color={ACTIVE_ICON} />
           </View>
         </GlassSurface>
       </Pressable>
@@ -57,71 +52,64 @@ export function AppBottomBar({
           style={styles.navPill}
           contentStyle={styles.navPillContent}
         >
-          {/* Inside glass + overflow:hidden → glow cannot leave the pill */}
-          <ActiveTabGlow
-            style={[
-              styles.glowInPill,
-              {
-                left: glowOffset,
-                marginLeft: -48,
-              },
-            ]}
-          />
-
           <Pressable
             accessibilityRole="tab"
+            accessibilityLabel="Home"
             accessibilityState={{ selected: activeTab === "home" }}
             onPress={() => onTabPress("home")}
             style={styles.navItem}
           >
-            <HomeTabIcon
+            {activeTab === "home" ? <ActiveTabGlow /> : null}
+            <HomeTabGlyph
               size={24}
-              color={
-                activeTab === "home"
-                  ? OttoColors.primarySoft
-                  : OttoColors.textSoft
-              }
+              color={activeTab === "home" ? ACTIVE_ICON : INACTIVE_ICON}
             />
           </Pressable>
 
           <Pressable
             accessibilityRole="tab"
+            accessibilityLabel="Atividades"
             accessibilityState={{ selected: activeTab === "activities" }}
             onPress={() => onTabPress("activities")}
             style={styles.navItem}
           >
-            <WalletTabIcon
+            {activeTab === "activities" ? <ActiveTabGlow /> : null}
+            <WalletTabGlyph
               size={24}
-              color={
-                activeTab === "activities"
-                  ? OttoColors.primarySoft
-                  : OttoColors.textSoft
-              }
+              color={activeTab === "activities" ? ACTIVE_ICON : INACTIVE_ICON}
             />
           </Pressable>
 
           <Pressable
             accessibilityRole="tab"
+            accessibilityLabel="Comunidade"
             accessibilityState={{ selected: activeTab === "community" }}
             onPress={() => onTabPress("community")}
             style={styles.communityItem}
           >
+            {activeTab === "community" ? <ActiveTabGlow /> : null}
             <View style={styles.avatarStack}>
-              <Image
-                source={require("@/assets/images/avatars/onca.png")}
-                style={[styles.miniAvatar, styles.avatarFront]}
-                contentFit="cover"
-              />
-              <Image
-                source={require("@/assets/images/avatars/lhama.png")}
-                style={[styles.miniAvatar, styles.avatarMid]}
-                contentFit="cover"
-              />
-              <Image
-                source={require("@/assets/images/avatars/akita.png")}
-                style={[styles.miniAvatar, styles.avatarBack]}
-                contentFit="cover"
-              />
+              <View style={[styles.miniAvatar, styles.avatarTopLeft]}>
+                <Image
+                  source={require("@/assets/images/avatars/onca.png")}
+                  style={styles.miniAvatarImage}
+                  contentFit="cover"
+                />
+              </View>
+              <View style={[styles.miniAvatar, styles.avatarTopRight]}>
+                <Image
+                  source={require("@/assets/images/avatars/lhama.png")}
+                  style={styles.miniAvatarImage}
+                  contentFit="cover"
+                />
+              </View>
+              <View style={[styles.miniAvatar, styles.avatarBottom]}>
+                <Image
+                  source={require("@/assets/images/avatars/akita.png")}
+                  style={styles.miniAvatarImage}
+                  contentFit="cover"
+                />
+              </View>
               {communityBadgeCount > 0 ? (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{communityBadgeCount}</Text>
@@ -133,21 +121,14 @@ export function AppBottomBar({
 
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Configurações"
+          accessibilityLabel="Perfil e configurações"
           onPress={onSettingsPress}
         >
           <GlassSurface
             style={styles.logoButton}
             contentStyle={styles.logoButtonContent}
           >
-            <Image
-              source={
-                settingsAvatarSource ??
-                require("@/assets/images/auth/avatar-1.png")
-              }
-              style={styles.settingsAvatar}
-              contentFit="cover"
-            />
+            <OttoMarkGlyph />
           </GlassSurface>
         </Pressable>
       </View>
@@ -187,6 +168,7 @@ const styles = StyleSheet.create({
     height: 24,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
     zIndex: 1,
   },
   navRow: {
@@ -207,59 +189,63 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
   },
-  glowInPill: {
-    // Lower under the icon; clipped by pill overflow
-    bottom: -37,
-    zIndex: 0,
-  },
   navItem: {
-    width: 34,
-    height: 34,
+    width: 24,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
   },
   communityItem: {
-    width: 42,
-    height: 34,
+    width: 34,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
   },
   avatarStack: {
     width: 34,
-    height: 28,
+    height: 32,
     position: "relative",
   },
   miniAvatar: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    borderWidth: 0.5,
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: OttoColors.borderSoft,
     position: "absolute",
+    backgroundColor: OttoColors.surface,
   },
-  avatarFront: {
+  miniAvatarImage: {
+    width: 45,
+    height: 67,
+    position: "absolute",
+    left: -7,
+    top: -15,
+  },
+  avatarTopLeft: {
     left: 0,
     top: 0,
     zIndex: 3,
   },
-  avatarMid: {
-    left: 10,
+  avatarTopRight: {
+    left: 12,
     top: 0,
     zIndex: 2,
   },
-  avatarBack: {
+  avatarBottom: {
     left: 7,
-    top: 8,
+    top: 12,
     zIndex: 1,
   },
   badge: {
     position: "absolute",
-    right: -4,
-    top: 10,
-    minWidth: 14,
-    height: 14,
+    left: 25,
+    top: 14,
+    minWidth: 16,
+    height: 16,
     borderRadius: 999,
     backgroundColor: OttoColors.danger,
     alignItems: "center",
@@ -271,6 +257,7 @@ const styles = StyleSheet.create({
     ...OttoTypography.captionSmall,
     color: OttoColors.text,
     textAlign: "center",
+    width: 12,
   },
   logoButton: {
     width: 56,
@@ -284,9 +271,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     overflow: "hidden",
     borderRadius: 40,
-  },
-  settingsAvatar: {
-    width: 56,
-    height: 56,
   },
 });

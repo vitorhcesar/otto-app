@@ -1,0 +1,22 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="92.4" height="92.4" viewBox="0 0 92.4 92.4" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 1321314374">
+<g id="Ellipse 7" opacity="0.5" filter="url(#filter0_f_0_129)">
+<circle cx="46.2" cy="56.2" r="6" fill="#95FF52"/>
+</g>
+<g id="Ellipse 8" opacity="0.1" filter="url(#filter1_f_0_129)">
+<circle cx="46.2" cy="46.2" r="22" fill="#95FF52"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_f_0_129" x="33.6" y="43.6" width="25.2" height="25.2" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="3.3" result="effect1_foregroundBlur_0_129"/>
+</filter>
+<filter id="filter1_f_0_129" x="0" y="0" width="92.4" height="92.4" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="12.1" result="effect1_foregroundBlur_0_129"/>
+</filter>
+</defs>
+</svg>

@@ -7,7 +7,7 @@ type ActiveTabGlowProps = {
 
 /**
  * Soft neon bloom under the active tab.
- * Must live inside GlassSurface so overflow:hidden keeps it in the pill.
+ * Lives inside the selected nav item; GlassSurface overflow clips it to the pill.
  */
 export function ActiveTabGlow({ style }: ActiveTabGlowProps) {
   return (
@@ -40,14 +40,18 @@ export function AiBarGlow({ style }: AiBarGlowProps) {
 const styles = StyleSheet.create({
   anchor: {
     position: "absolute",
-    width: 96,
-    height: 72,
+    width: 92,
+    height: 92,
+    bottom: -37,
+    left: "50%",
+    marginLeft: -46,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
+    zIndex: 0,
   },
   glow: {
-    width: 96,
-    height: 96,
+    width: 92,
+    height: 92,
     opacity: 0.95,
   },
   aiAnchor: {

@@ -1,4 +1,4 @@
-import Svg, { Circle, Path, Rect } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 type IconProps = {
   size?: number;
@@ -105,82 +105,3 @@ export function ExpenseArrowIcon({ size = 12, color = '#FF6B6B' }: IconProps) {
   );
 }
 
-export function HomeTabIcon({ size = 24, color = '#767D73' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M4.5 10.5L12 4.5L19.5 10.5V19C19.5 19.5523 19.0523 20 18.5 20H5.5C4.94772 20 4.5 19.5523 4.5 19V10.5Z"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M10 20V14H14V20"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
-}
-
-export function WalletTabIcon({ size = 24, color = '#95FF52' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect
-        x={3.5}
-        y={6.5}
-        width={17}
-        height={12}
-        rx={2.5}
-        stroke={color}
-        strokeWidth={1.5}
-      />
-      <Path
-        d="M3.5 10H20.5"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-      />
-      <Circle cx={16.5} cy={14.5} r={1} fill={color} />
-    </Svg>
-  );
-}
-
-export function AiWaveIcon({ size = 24, color = '#95FF52' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M5 12V12.01"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M9 8V16"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M13 5V19"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M17 9V15"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M21 11V13"
-        stroke={color}
-        strokeWidth={2}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
-}
