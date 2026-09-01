@@ -9,6 +9,7 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0a0b0a",
     "ios": {
+      "bundleIdentifier": "com.otto.app",
       "icon": "./assets/images/otto-app-icon.png",
       "backgroundColor": "#0a0b0a"
     },
@@ -19,7 +20,7 @@
       },
       "backgroundColor": "#0a0b0a",
       "predictiveBackGestureEnabled": false,
-      "package": "com.yond.otto"
+      "package": "com.otto.app"
     },
     "web": {
       "output": "static",
