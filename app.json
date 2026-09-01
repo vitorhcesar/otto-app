@@ -9,7 +9,7 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0a0b0a",
     "ios": {
-      "bundleIdentifier": "com.otto.app",
+      "bundleIdentifier": "com.fansyfans.otto",
       "icon": "./assets/images/otto-app-icon.png",
       "backgroundColor": "#0a0b0a",
       "infoPlist": {
@@ -23,7 +23,7 @@
       },
       "backgroundColor": "#0a0b0a",
       "predictiveBackGestureEnabled": false,
-      "package": "com.otto.app"
+      "package": "com.fansyfans.otto"
     },
     "web": {
       "output": "static",
