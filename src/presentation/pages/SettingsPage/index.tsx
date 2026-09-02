@@ -15,6 +15,13 @@ import { getErrorMessage } from '@/infra/http/get-error-message';
 import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { BackButton } from '@/presentation/components/ui/back-button';
+import {
+  BancoDoBrasilLogo,
+  CaixaLogo,
+  ItauLogo,
+  NubankLogo,
+  SantanderLogo,
+} from '@/presentation/components/ui/bank-logos';
 import { ProfileAvatarControl } from '@/presentation/components/ui/profile-avatar-control';
 import { ReportProblemSheet } from '@/presentation/components/ui/report-problem-sheet';
 import {
@@ -39,10 +46,11 @@ import {
 import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
 
 const BANK_STACK = [
-  { id: 'santander', color: '#EC0000' },
-  { id: 'bb', color: '#FFEF00' },
-  { id: 'c6', color: '#242424' },
-  { id: 'itau', color: '#EC7000' },
+  { id: 'santander', Logo: SantanderLogo },
+  { id: 'bb', Logo: BancoDoBrasilLogo },
+  { id: 'nubank', Logo: NubankLogo },
+  { id: 'caixa', Logo: CaixaLogo },
+  { id: 'itau', Logo: ItauLogo },
 ] as const;
 
 type NavRowProps = {
@@ -62,7 +70,7 @@ function NavRow({ label, icon, onPress }: NavRowProps) {
         <View style={styles.iconSlot}>{icon}</View>
         <Text style={styles.navLabel}>{label}</Text>
       </View>
-      <SettingsChevronIcon size={16} color={OttoColors.textMid} />
+      <SettingsChevronIcon size={16} />
     </Pressable>
   );
 }
@@ -157,6 +165,7 @@ export function SettingsPage() {
           avatar={selectedAvatar}
           onChange={handleAvatarChange}
           size={80}
+          action="edit"
         />
 
         <View style={styles.body}>
@@ -172,7 +181,7 @@ export function SettingsPage() {
                   pressed && styles.pressed,
                 ]}
               >
-                <SettingsRocketIcon size={16} color={OttoColors.textMid} />
+                <SettingsRocketIcon size={16} />
                 <View style={styles.featureCopy}>
                   <Text style={styles.featureTitle}>Grátis</Text>
                   <Text style={styles.featureSubtitle}>Plano</Text>
@@ -188,20 +197,24 @@ export function SettingsPage() {
                 ]}
               >
                 <View style={styles.bankStack}>
-                  {BANK_STACK.map((bank, index) => (
-                    <View
-                      key={bank.id}
-                      style={[
-                        styles.bankDot,
-                        {
-                          backgroundColor: bank.color,
-                          marginLeft: index === 0 ? 0 : -5,
-                          zIndex: BANK_STACK.length - index,
-                          borderColor: OttoColors.surface,
-                        },
-                      ]}
-                    />
-                  ))}
+                  {BANK_STACK.map((bank, index) => {
+                    const Logo = bank.Logo;
+                    return (
+                      <View
+                        key={bank.id}
+                        style={[
+                          styles.bankDot,
+                          {
+                            marginLeft: index === 0 ? 0 : -5,
+                            zIndex: BANK_STACK.length - index,
+                            borderColor: OttoColors.surface,
+                          },
+                        ]}
+                      >
+                        <Logo size={20} />
+                      </View>
+                    );
+                  })}
                   <View
                     style={[
                       styles.bankDot,
@@ -221,7 +234,7 @@ export function SettingsPage() {
 
             <NavRow
               label="Avalie o Otto"
-              icon={<SettingsStarIcon size={16} color={OttoColors.textMid} />}
+              icon={<SettingsStarIcon size={16} />}
               onPress={() => comingSoon('Avalie o Otto')}
             />
           </View>
@@ -229,26 +242,22 @@ export function SettingsPage() {
           <Section title="Geral">
             <NavRow
               label="Perfil"
-              icon={
-                <SettingsProfileIcon size={16} color={OttoColors.textMid} />
-              }
+              icon={<SettingsProfileIcon size={16} />}
               onPress={() => router.push('/profile')}
             />
             <NavRow
               label="Preferências"
-              icon={
-                <SettingsSlidersIcon size={16} color={OttoColors.textMid} />
-              }
+              icon={<SettingsSlidersIcon size={16} />}
               onPress={() => router.push('/preferences')}
             />
             <NavRow
               label="Assinatura"
-              icon={<SettingsCardIcon size={16} color={OttoColors.textMid} />}
+              icon={<SettingsCardIcon size={16} />}
               onPress={() => router.push('/subscription')}
             />
             <NavRow
               label="API Keys"
-              icon={<SettingsKeyIcon size={16} color={OttoColors.textMid} />}
+              icon={<SettingsKeyIcon size={16} />}
               onPress={() => router.push('/api-keys')}
             />
           </Section>
@@ -256,23 +265,17 @@ export function SettingsPage() {
           <Section title="Seguranças">
             <NavRow
               label="Alterar senha"
-              icon={
-                <SettingsPasswordIcon size={16} color={OttoColors.textMid} />
-              }
+              icon={<SettingsPasswordIcon size={16} />}
               onPress={() => router.push('/change-password')}
             />
             <NavRow
               label="Biometria"
-              icon={
-                <SettingsBiometricsIcon size={16} color={OttoColors.textMid} />
-              }
+              icon={<SettingsBiometricsIcon size={16} />}
               onPress={() => router.push('/biometrics')}
             />
             <NavRow
               label="Reportar um problema"
-              icon={
-                <SettingsReportIcon size={16} color={OttoColors.textMid} />
-              }
+              icon={<SettingsReportIcon size={16} />}
               onPress={() => setReportSheetOpen(true)}
             />
           </Section>
@@ -280,9 +283,7 @@ export function SettingsPage() {
           <Section title="Suporte">
             <NavRow
               label="Falar com suporte"
-              icon={
-                <SettingsSupportIcon size={16} color={OttoColors.textMid} />
-              }
+              icon={<SettingsSupportIcon size={16} />}
               onPress={() => comingSoon('Falar com suporte')}
             />
           </Section>
@@ -299,7 +300,7 @@ export function SettingsPage() {
             <Text style={styles.logoutLabel}>
               {loggingOut ? 'Saindo…' : 'Sair'}
             </Text>
-            <SettingsLogoutIcon size={16} color={OttoColors.text} />
+            <SettingsLogoutIcon size={16} />
           </Pressable>
 
           <Text style={styles.version}>{appVersionLabel()}</Text>
@@ -381,6 +382,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 999,
     borderWidth: 1,
+    overflow: 'hidden',
   },
   bankMore: {
     backgroundColor: OttoColors.text,

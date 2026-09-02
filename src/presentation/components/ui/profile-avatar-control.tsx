@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { AvatarPickerSheet } from '@/presentation/components/ui/avatar-picker-sheet';
 import { RefreshIcon } from '@/presentation/components/ui/auth-icons';
+import { SettingsEditIcon } from '@/presentation/components/ui/settings-icons';
 import {
   DEFAULT_AVATARS,
   type IAvatarOption,
@@ -11,20 +12,23 @@ import {
 import { OttoColors } from '@/presentation/constants/theme';
 
 const ACTION_SIZE = 28;
+const EDIT_ACTION_SIZE = 24;
 
 export type ProfileAvatarControlProps = {
   avatar: IAvatarOption;
   onChange: (avatar: IAvatarOption) => void;
   size?: number;
   avatars?: IAvatarOption[];
+  action?: 'refresh' | 'edit';
 };
 
-/** Avatar + refresh badge + picker sheet — same control used in auth onboarding. */
+/** Avatar + action badge + picker sheet — same control used in auth onboarding. */
 export function ProfileAvatarControl({
   avatar,
   onChange,
   size = 112,
   avatars = DEFAULT_AVATARS,
+  action = 'refresh',
 }: ProfileAvatarControlProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -45,10 +49,17 @@ export function ProfileAvatarControl({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Trocar foto de perfil"
-          style={styles.avatarAction}
+          style={[
+            styles.avatarAction,
+            action === 'edit' && styles.avatarActionEdit,
+          ]}
           onPress={() => setPickerOpen(true)}
         >
-          <RefreshIcon size={12} color={OttoColors.buttonFilledText} />
+          {action === 'edit' ? (
+            <SettingsEditIcon size={16} />
+          ) : (
+            <RefreshIcon size={12} color={OttoColors.buttonFilledText} />
+          )}
         </Pressable>
       </View>
 
@@ -74,5 +85,11 @@ const styles = StyleSheet.create({
     backgroundColor: OttoColors.text,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  avatarActionEdit: {
+    width: EDIT_ACTION_SIZE,
+    height: EDIT_ACTION_SIZE,
+    borderRadius: EDIT_ACTION_SIZE / 2,
+    backgroundColor: OttoColors.borderStrong,
   },
 });
