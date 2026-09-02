@@ -1,6 +1,8 @@
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Platform } from 'react-native';
 
+import { getPreferences } from '@/infra/preferences/preferences-store';
+
 export type BiometricKind = 'face' | 'fingerprint' | 'iris' | 'generic';
 
 export type BiometricCapability = {
@@ -116,4 +118,19 @@ export async function authenticateWithBiometrics(promptMessage: string) {
     cancelLabel: 'Cancelar',
     disableDeviceFallback: false,
   });
+}
+
+export async function shouldRequireBiometricLock() {
+  const [prefs, capability] = await Promise.all([
+    getPreferences(),
+    getBiometricCapability(),
+  ]);
+
+  return {
+    required:
+      prefs.biometricsEnabled &&
+      capability.hardwareAvailable &&
+      capability.enrolled,
+    capability,
+  };
 }

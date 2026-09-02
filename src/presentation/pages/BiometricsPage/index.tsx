@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Switch,
@@ -98,8 +99,9 @@ export function BiometricsPage() {
 
       await persist(true);
     } catch {
-      // Web / unsupported environments — still allow storing preference.
-      await persist(true);
+      if (Platform.OS === 'web') {
+        await persist(true);
+      }
     }
   }
 

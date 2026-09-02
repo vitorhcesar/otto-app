@@ -10,6 +10,11 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
+  ActivitiesFilterSheet,
+  DEFAULT_ACTIVITIES_FILTERS,
+  type ActivitiesFilters,
+} from "@/presentation/components/ui/activities-filter-sheet";
+import {
   ActivityEyeClosedIcon,
   ActivityEyeOpenIcon,
   EmptyActivityIcon,
@@ -81,6 +86,10 @@ export function ActivitiesPage() {
   const [activeFilter, setActiveFilter] = useState<FilterId>("Entradas");
   const [incomeVisible, setIncomeVisible] = useState(true);
   const [expenseVisible, setExpenseVisible] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filters, setFilters] = useState<ActivitiesFilters>(
+    DEFAULT_ACTIVITIES_FILTERS,
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -122,6 +131,7 @@ export function ActivitiesPage() {
                 accessibilityRole="button"
                 accessibilityLabel="Filtros"
                 hitSlop={8}
+                onPress={() => setFiltersOpen(true)}
               >
                 <FilterSlidersIcon size={28} />
               </Pressable>
@@ -187,6 +197,13 @@ export function ActivitiesPage() {
           </View>
         </View>
       </ScrollView>
+
+      <ActivitiesFilterSheet
+        visible={filtersOpen}
+        value={filters}
+        onClose={() => setFiltersOpen(false)}
+        onApply={setFilters}
+      />
     </SafeAreaView>
   );
 }

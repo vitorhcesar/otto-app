@@ -46,6 +46,7 @@ export const OttoColors = {
   income: "#63e29f",
   expense: "#ff6b6b",
   neutralBlackSoft: "#1C1D1B",
+  greenUseHighlight: "#95FF52",
 } as const;
 
 export const OttoFonts = {

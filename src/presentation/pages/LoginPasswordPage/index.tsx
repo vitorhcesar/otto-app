@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -36,17 +36,26 @@ export function LoginPasswordPage() {
   const [email, setEmailLocal] = useState(emailParam);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const submittingRef = useRef(false);
 
   const canContinue = isValidEmail(email) && password.length >= 6;
 
-  async function handleLogin() {
-    if (!canContinue || loading) {
+  async function submitLogin(nextEmail: string, nextPassword: string) {
+    if (
+      submittingRef.current ||
+      !isValidEmail(nextEmail) ||
+      nextPassword.length < 6
+    ) {
       return;
     }
 
+    submittingRef.current = true;
     setLoading(true);
     try {
-      const result = await api.modules.auth.login(email.trim(), password);
+      const result = await api.modules.auth.login(
+        nextEmail.trim(),
+        nextPassword,
+      );
       await applyAuthResult(result);
       resetDraft();
       router.replace('/(tabs)/activities');
@@ -56,7 +65,32 @@ export function LoginPasswordPage() {
         getErrorMessage(error, 'Não foi possível entrar. Tente novamente.'),
       );
     } finally {
+      submittingRef.current = false;
       setLoading(false);
+    }
+  }
+
+  function looksLikeAutofill(previous: string, next: string) {
+    return (
+      next.length >= 6 &&
+      (previous.length === 0 || next.length - previous.length > 1)
+    );
+  }
+
+  function handleEmailChange(value: string) {
+    const previous = email;
+    setEmailLocal(value);
+    setEmail(value.trim());
+    if (looksLikeAutofill(previous, value) && password.length >= 6) {
+      void submitLogin(value, password);
+    }
+  }
+
+  function handlePasswordChange(value: string) {
+    const previous = password;
+    setPassword(value);
+    if (looksLikeAutofill(previous, value) && isValidEmail(email)) {
+      void submitLogin(email, value);
     }
   }
 
@@ -90,24 +124,34 @@ export function LoginPasswordPage() {
                   label="E-mail"
                   placeholder="E-mail"
                   value={email}
-                  onChangeText={(value) => {
-                    setEmailLocal(value);
-                    setEmail(value.trim());
-                  }}
+                  onChangeText={handleEmailChange}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  autoComplete="email"
-                  textContentType="emailAddress"
+                  autoComplete="username"
+                  textContentType="username"
+                  importantForAutofill="yes"
                   returnKeyType="next"
                 />
                 <PasswordField
                   label="Senha"
                   placeholder="Senha"
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={handlePasswordChange}
+                  onChange={(event) => {
+                    const value = event.nativeEvent.text ?? '';
+                    if (value !== password) {
+                      handlePasswordChange(value);
+                    }
+                  }}
                   autoComplete="password"
-                  returnKeyType="done"
+                  textContentType="password"
+                  importantForAutofill="yes"
+                  returnKeyType="go"
+                  enablesReturnKeyAutomatically
+                  onSubmitEditing={() => {
+                    void submitLogin(email, password);
+                  }}
                 />
               </View>
 
@@ -116,7 +160,9 @@ export function LoginPasswordPage() {
                 variant="filled"
                 disabled={!canContinue}
                 loading={loading}
-                onPress={handleLogin}
+                onPress={() => {
+                  void submitLogin(email, password);
+                }}
               />
             </View>
           </ScrollView>

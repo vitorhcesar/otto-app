@@ -40,7 +40,13 @@
         }
       ],
       "expo-image",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "O Otto usa o Face ID para desbloquear o app e confirmar ações sensíveis."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

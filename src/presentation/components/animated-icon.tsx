@@ -5,6 +5,8 @@ import { Dimensions, StyleSheet, View } from "react-native";
 import Animated, { Easing, Keyframe } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
+import { OttoColors } from "@/presentation/constants/theme";
+
 const INITIAL_SCALE_FACTOR = Dimensions.get("screen").height / 90;
 const DURATION = 600;
 
@@ -36,7 +38,7 @@ export function AnimatedSplashOverlay() {
   const image = (
     <Image
       style={styles.image}
-      source={require("@/assets/images/expo-logo.png")}
+      source={require("@/assets/images/otto-logo.png")}
     />
   );
 
@@ -163,7 +165,7 @@ const styles = StyleSheet.create({
   },
   splashOverlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: "#208AEF",
+    backgroundColor: OttoColors.background,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 1000,
