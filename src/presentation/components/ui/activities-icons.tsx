@@ -1,107 +1,82 @@
-import Svg, { Circle, Path } from 'react-native-svg';
+import { useMemo } from 'react';
+import { View } from 'react-native';
+import { SvgXml } from 'react-native-svg';
+
+import {
+  BACK_ARROW_XML,
+  EMPTY_PANDA_XML,
+  EXPENSE_ARROW_XML,
+  EYE_CLOSED_XML,
+  EYE_OPEN_XML,
+  FILTER_ICON_XML,
+  INCOME_ARROW_XML,
+  PLUS_ICON_XML,
+  SEARCH_ICON_XML,
+} from '@/presentation/components/ui/activities-icon-xml';
 
 type IconProps = {
   size?: number;
   color?: string;
 };
 
-export function BackChevronIcon({ size = 24, color = '#F5F5F4' }: IconProps) {
+function tintFigmaIcon(xml: string, color: string) {
+  return xml.replace(/#(?:E0E2DF|585D56|373A36|63E29F|C33A22)/gi, color);
+}
+
+function FigmaIcon({
+  xml,
+  size,
+  color,
+}: {
+  xml: string;
+  size: number;
+  color?: string;
+}) {
+  const tintedXml = useMemo(
+    () => (color ? tintFigmaIcon(xml, color) : xml),
+    [xml, color],
+  );
+
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M14.5 6.5L9 12L14.5 17.5"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
+    <View style={{ width: size, height: size, overflow: 'hidden' }}>
+      <SvgXml xml={tintedXml} width={size} height={size} />
+    </View>
   );
 }
 
-export function PlusIcon({ size = 24, color = '#0A0B0A' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M12 6V18"
-        stroke={color}
-        strokeWidth={1.7}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M6 12H18"
-        stroke={color}
-        strokeWidth={1.7}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
+/** Left arrow used by the shared BackButton — not the Figma undo/reply glyph. */
+export function BackArrowIcon({ size = 28, color }: IconProps) {
+  return <FigmaIcon xml={BACK_ARROW_XML} size={size} color={color} />;
 }
 
-export function SearchIcon({ size = 16, color = '#767D73' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 16 16" fill="none">
-      <Circle cx={7} cy={7} r={5} stroke={color} strokeWidth={1.25} />
-      <Path
-        d="M11.2 11.2L14 14"
-        stroke={color}
-        strokeWidth={1.25}
-        strokeLinecap="round"
-      />
-    </Svg>
-  );
+export function PlusIcon({ size = 24, color }: IconProps) {
+  return <FigmaIcon xml={PLUS_ICON_XML} size={size} color={color} />;
 }
 
-export function FilterSlidersIcon({ size = 24, color = '#F5F5F4' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path d="M4 7H20" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
-      <Path d="M4 12H20" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
-      <Path d="M4 17H20" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
-      <Circle cx={9} cy={7} r={2} fill={color} />
-      <Circle cx={15} cy={12} r={2} fill={color} />
-      <Circle cx={11} cy={17} r={2} fill={color} />
-    </Svg>
-  );
+export function SearchIcon({ size = 16, color }: IconProps) {
+  return <FigmaIcon xml={SEARCH_ICON_XML} size={size} color={color} />;
 }
 
-export function IncomeArrowIcon({ size = 12, color = '#63E29F' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 12 12" fill="none">
-      <Path
-        d="M8.5 3.5L3.5 8.5"
-        stroke={color}
-        strokeWidth={1.25}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M3.5 4.5V8.5H7.5"
-        stroke={color}
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
+export function FilterSlidersIcon({ size = 28, color }: IconProps) {
+  return <FigmaIcon xml={FILTER_ICON_XML} size={size} color={color} />;
 }
 
-export function ExpenseArrowIcon({ size = 12, color = '#FF6B6B' }: IconProps) {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 12 12" fill="none">
-      <Path
-        d="M3.5 8.5L8.5 3.5"
-        stroke={color}
-        strokeWidth={1.25}
-        strokeLinecap="round"
-      />
-      <Path
-        d="M8.5 7.5V3.5H4.5"
-        stroke={color}
-        strokeWidth={1.25}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
-  );
+export function IncomeArrowIcon({ size = 12, color }: IconProps) {
+  return <FigmaIcon xml={INCOME_ARROW_XML} size={size} color={color} />;
 }
 
+export function ExpenseArrowIcon({ size = 12, color }: IconProps) {
+  return <FigmaIcon xml={EXPENSE_ARROW_XML} size={size} color={color} />;
+}
+
+export function EmptyActivityIcon({ size = 24, color }: IconProps) {
+  return <FigmaIcon xml={EMPTY_PANDA_XML} size={size} color={color} />;
+}
+
+export function ActivityEyeOpenIcon({ size = 16, color }: IconProps) {
+  return <FigmaIcon xml={EYE_OPEN_XML} size={size} color={color} />;
+}
+
+export function ActivityEyeClosedIcon({ size = 16, color }: IconProps) {
+  return <FigmaIcon xml={EYE_CLOSED_XML} size={size} color={color} />;
+}

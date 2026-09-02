@@ -1,7 +1,7 @@
 import { useRouter, type Href } from 'expo-router';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 
-import { BackChevronIcon } from '@/presentation/components/ui/activities-icons';
+import { BackArrowIcon } from '@/presentation/components/ui/activities-icons';
 import { OttoColors } from '@/presentation/constants/theme';
 
 export type BackButtonProps = Omit<PressableProps, 'children' | 'onPress'> & {
@@ -17,7 +17,7 @@ export type BackButtonProps = Omit<PressableProps, 'children' | 'onPress'> & {
 export function BackButton({
   onPress,
   fallbackHref = '/(tabs)',
-  size = 24,
+  size = 28,
   color = OttoColors.text,
   accessibilityLabel = 'Voltar',
   hitSlop = 8,
@@ -47,7 +47,7 @@ export function BackButton({
       onPress={handlePress}
       {...rest}
     >
-      <BackChevronIcon size={size} color={color} />
+      <BackArrowIcon size={size} color={color} />
     </Pressable>
   );
 }

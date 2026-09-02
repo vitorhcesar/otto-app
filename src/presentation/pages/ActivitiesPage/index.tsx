@@ -1,4 +1,3 @@
-import { Image } from "expo-image";
 import { useState } from "react";
 import {
   Pressable,
@@ -11,6 +10,9 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
+  ActivityEyeClosedIcon,
+  ActivityEyeOpenIcon,
+  EmptyActivityIcon,
   ExpenseArrowIcon,
   FilterSlidersIcon,
   IncomeArrowIcon,
@@ -18,10 +20,6 @@ import {
   SearchIcon,
 } from "@/presentation/components/ui/activities-icons";
 import { BackButton } from "@/presentation/components/ui/back-button";
-import {
-  EyeClosedIcon,
-  EyeOpenIcon,
-} from "@/presentation/components/ui/eye-icons";
 import {
   OttoColors,
   OttoFonts,
@@ -51,9 +49,9 @@ function SummaryCard({
     <View style={styles.summaryCard}>
       <View style={styles.summaryIconWrap}>
         {tone === "income" ? (
-          <IncomeArrowIcon size={12} color={OttoColors.income} />
+          <IncomeArrowIcon size={12} />
         ) : (
-          <ExpenseArrowIcon size={12} color={OttoColors.expense} />
+          <ExpenseArrowIcon size={12} />
         )}
       </View>
       <View style={styles.summaryCopy}>
@@ -66,7 +64,11 @@ function SummaryCard({
             onPress={onToggleVisibility}
             hitSlop={8}
           >
-            {hidden ? <EyeClosedIcon size={16} /> : <EyeOpenIcon size={16} />}
+            {hidden ? (
+              <ActivityEyeClosedIcon size={16} />
+            ) : (
+              <ActivityEyeOpenIcon size={16} />
+            )}
           </Pressable>
         </View>
       </View>
@@ -87,71 +89,75 @@ export function ActivitiesPage() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <BackButton />
-            <Pressable
-              style={styles.addButton}
-              accessibilityRole="button"
-              accessibilityLabel="Adicionar atividade"
-            >
-              <PlusIcon size={24} color={OttoColors.buttonFilledText} />
-            </Pressable>
+        <View style={styles.topBlock}>
+          <View style={styles.header}>
+            <View style={styles.headerTop}>
+              <BackButton />
+              <Pressable
+                style={styles.addButton}
+                accessibilityRole="button"
+                accessibilityLabel="Adicionar atividade"
+              >
+                <PlusIcon size={24} />
+              </Pressable>
+            </View>
+            <Text style={styles.title}>Atividades</Text>
           </View>
-          <Text style={styles.title}>Atividades</Text>
-        </View>
 
-        <View style={styles.searchRow}>
-          <View style={styles.searchField}>
-            <SearchIcon size={16} color={OttoColors.textSoft} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar atividades"
-              placeholderTextColor={OttoColors.textSoft}
-              value={query}
-              onChangeText={setQuery}
-              autoCorrect={false}
-              returnKeyType="search"
-            />
+          <View style={styles.toolbar}>
+            <View style={styles.searchRow}>
+              <View style={styles.searchField}>
+                <SearchIcon size={16} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Buscar atividades"
+                  placeholderTextColor={OttoColors.textSoft}
+                  value={query}
+                  onChangeText={setQuery}
+                  autoCorrect={false}
+                  returnKeyType="search"
+                />
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Filtros"
+                hitSlop={8}
+              >
+                <FilterSlidersIcon size={28} />
+              </Pressable>
+            </View>
+
+            <View style={styles.filtersWrap}>
+              <ScrollView
+                horizontal
+                style={styles.filtersScroll}
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.filters}
+              >
+                {FILTERS.map((filter) => {
+                  const selected = filter === activeFilter;
+                  return (
+                    <Pressable
+                      key={filter}
+                      onPress={() => setActiveFilter(filter)}
+                      style={[styles.chip, selected && styles.chipSelected]}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          selected && styles.chipTextSelected,
+                        ]}
+                      >
+                        {filter}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
           </View>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Filtros"
-            hitSlop={8}
-          >
-            <FilterSlidersIcon size={24} color={OttoColors.text} />
-          </Pressable>
-        </View>
-
-        <View style={styles.filtersWrap}>
-          <ScrollView
-            horizontal
-            style={styles.filtersScroll}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filters}
-          >
-            {FILTERS.map((filter) => {
-              const selected = filter === activeFilter;
-              return (
-                <Pressable
-                  key={filter}
-                  onPress={() => setActiveFilter(filter)}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                >
-                  <Text
-                    style={[
-                      styles.chipText,
-                      selected && styles.chipTextSelected,
-                    ]}
-                  >
-                    {filter}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
         </View>
 
         <View style={styles.summaryRow}>
@@ -172,12 +178,7 @@ export function ActivitiesPage() {
         </View>
 
         <View style={styles.emptyState}>
-          <Image
-            source={require("@/assets/images/auth/logo.png")}
-            style={styles.emptyLogo}
-            contentFit="contain"
-            accessibilityLabel="Otto"
-          />
+          <EmptyActivityIcon size={24} />
           <View style={styles.emptyCopy}>
             <Text style={styles.emptyTitle}>Nenhuma atividade encontrada</Text>
             <Text style={styles.emptySubtitle}>
@@ -202,6 +203,9 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     gap: 24,
   },
+  topBlock: {
+    gap: 16,
+  },
   header: {
     gap: 8,
   },
@@ -209,6 +213,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    minHeight: 40,
+  },
+  toolbar: {
+    gap: 16,
   },
   addButton: {
     width: 40,
@@ -323,12 +331,6 @@ const styles = StyleSheet.create({
     gap: 12,
     maxWidth: 250,
     alignSelf: "center",
-    paddingVertical: 32,
-  },
-  emptyLogo: {
-    width: 28,
-    height: 28,
-    opacity: 0.9,
   },
   emptyCopy: {
     gap: 4,
