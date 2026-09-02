@@ -1,14 +1,14 @@
-import { BlurTargetView } from 'expo-blur';
-import { Tabs, usePathname, useRouter } from 'expo-router';
-import { useRef } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { BlurTargetView } from "expo-blur";
+import { Tabs, usePathname, useRouter } from "expo-router";
+import { useRef } from "react";
+import { StyleSheet, View } from "react-native";
 
-import { BlurTargetProvider } from '@/presentation/blur/blur-target-context';
+import { BlurTargetProvider } from "@/presentation/blur/blur-target-context";
 import {
   AppBottomBar,
   type AppTabKey,
-} from '@/presentation/components/app-bottom-bar';
-import { OttoColors } from '@/presentation/constants/theme';
+} from "@/presentation/components/app-bottom-bar";
+import { OttoColors } from "@/presentation/constants/theme";
 
 /** Espaço reservado para AI bar + nav + safe area */
 export const APP_BOTTOM_CHROME_HEIGHT = 148;
@@ -30,9 +30,9 @@ export default function TabsLayout() {
               },
             }}
           >
-            <Tabs.Screen name="index" options={{ title: 'Home' }} />
-            <Tabs.Screen name="activities" options={{ title: 'Atividades' }} />
-            <Tabs.Screen name="community" options={{ title: 'Comunidade' }} />
+            <Tabs.Screen name="index" options={{ title: "Home" }} />
+            <Tabs.Screen name="activities" options={{ title: "Atividades" }} />
+            <Tabs.Screen name="community" options={{ title: "Comunidade" }} />
           </Tabs>
         </BlurTargetView>
 
@@ -46,28 +46,28 @@ function TabsChromeBar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const activeTab: AppTabKey = pathname.includes('community')
-    ? 'community'
-    : pathname.includes('activities')
-      ? 'activities'
-      : 'home';
+  const activeTab: AppTabKey = pathname.includes("community")
+    ? "community"
+    : pathname.includes("activities")
+      ? "activities"
+      : "home";
 
   return (
     <View style={styles.tabBarOverlay} pointerEvents="box-none">
       <AppBottomBar
         activeTab={activeTab}
         onTabPress={(tab) => {
-          if (tab === 'home') {
-            router.navigate('/(tabs)');
+          if (tab === "home") {
+            router.navigate("/(tabs)");
             return;
           }
-          if (tab === 'activities') {
-            router.navigate('/(tabs)/activities');
+          if (tab === "activities") {
+            router.navigate("/(tabs)/activities");
             return;
           }
-          router.navigate('/(tabs)/community');
+          router.navigate("/(tabs)/community");
         }}
-        onSettingsPress={() => router.push('/settings')}
+        onSettingsPress={() => router.push("/settings")}
       />
     </View>
   );
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tabBarOverlay: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,

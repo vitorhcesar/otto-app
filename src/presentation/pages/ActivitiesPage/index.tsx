@@ -1,5 +1,5 @@
-import { Image } from 'expo-image';
-import { useState } from 'react';
+import { Image } from "expo-image";
+import { useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -7,8 +7,8 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
   ExpenseArrowIcon,
@@ -16,12 +16,19 @@ import {
   IncomeArrowIcon,
   PlusIcon,
   SearchIcon,
-} from '@/presentation/components/ui/activities-icons';
-import { BackButton } from '@/presentation/components/ui/back-button';
-import { EyeClosedIcon, EyeOpenIcon } from '@/presentation/components/ui/eye-icons';
-import { OttoColors, OttoFonts, OttoTypography } from '@/presentation/constants/theme';
+} from "@/presentation/components/ui/activities-icons";
+import { BackButton } from "@/presentation/components/ui/back-button";
+import {
+  EyeClosedIcon,
+  EyeOpenIcon,
+} from "@/presentation/components/ui/eye-icons";
+import {
+  OttoColors,
+  OttoFonts,
+  OttoTypography,
+} from "@/presentation/constants/theme";
 
-const FILTERS = ['Entradas', 'Saídas', 'Pagamentos', 'Cartão'] as const;
+const FILTERS = ["Entradas", "Saídas", "Pagamentos", "Cartão"] as const;
 
 type FilterId = (typeof FILTERS)[number];
 
@@ -30,7 +37,7 @@ type SummaryCardProps = {
   value: string;
   hidden: boolean;
   onToggleVisibility: () => void;
-  tone: 'income' | 'expense';
+  tone: "income" | "expense";
 };
 
 function SummaryCard({
@@ -43,7 +50,7 @@ function SummaryCard({
   return (
     <View style={styles.summaryCard}>
       <View style={styles.summaryIconWrap}>
-        {tone === 'income' ? (
+        {tone === "income" ? (
           <IncomeArrowIcon size={12} color={OttoColors.income} />
         ) : (
           <ExpenseArrowIcon size={12} color={OttoColors.expense} />
@@ -52,10 +59,10 @@ function SummaryCard({
       <View style={styles.summaryCopy}>
         <Text style={styles.summaryLabel}>{label}</Text>
         <View style={styles.summaryValueRow}>
-          <Text style={styles.summaryValue}>{hidden ? 'R$*,**' : value}</Text>
+          <Text style={styles.summaryValue}>{hidden ? "R$*,**" : value}</Text>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={hidden ? 'Mostrar valor' : 'Ocultar valor'}
+            accessibilityLabel={hidden ? "Mostrar valor" : "Ocultar valor"}
             onPress={onToggleVisibility}
             hitSlop={8}
           >
@@ -68,13 +75,13 @@ function SummaryCard({
 }
 
 export function ActivitiesPage() {
-  const [query, setQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState<FilterId>('Entradas');
+  const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<FilterId>("Entradas");
   const [incomeVisible, setIncomeVisible] = useState(true);
   const [expenseVisible, setExpenseVisible] = useState(false);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
@@ -107,7 +114,11 @@ export function ActivitiesPage() {
               returnKeyType="search"
             />
           </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Filtros" hitSlop={8}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Filtros"
+            hitSlop={8}
+          >
             <FilterSlidersIcon size={24} color={OttoColors.text} />
           </Pressable>
         </View>
@@ -129,7 +140,12 @@ export function ActivitiesPage() {
                   accessibilityRole="button"
                   accessibilityState={{ selected }}
                 >
-                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                  <Text
+                    style={[
+                      styles.chipText,
+                      selected && styles.chipTextSelected,
+                    ]}
+                  >
                     {filter}
                   </Text>
                 </Pressable>
@@ -157,7 +173,7 @@ export function ActivitiesPage() {
 
         <View style={styles.emptyState}>
           <Image
-            source={require('@/assets/images/auth/logo.png')}
+            source={require("@/assets/images/auth/logo.png")}
             style={styles.emptyLogo}
             contentFit="contain"
             accessibilityLabel="Otto"
@@ -190,31 +206,31 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   addButton: {
     width: 40,
     height: 40,
     borderRadius: 24,
     backgroundColor: OttoColors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     ...OttoTypography.h1,
     color: OttoColors.text,
   },
   searchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
   },
   searchField: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     borderWidth: 1,
     borderColor: OttoColors.borderSoft,
@@ -238,15 +254,15 @@ const styles = StyleSheet.create({
   filters: {
     gap: 10,
     paddingRight: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   chip: {
     borderRadius: 40,
     backgroundColor: OttoColors.surface,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    alignSelf: 'center',
-    justifyContent: 'center',
+    alignSelf: "center",
+    justifyContent: "center",
   },
   chipSelected: {
     backgroundColor: OttoColors.text,
@@ -260,14 +276,14 @@ const styles = StyleSheet.create({
     color: OttoColors.buttonFilledText,
   },
   summaryRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   summaryCard: {
     flex: 1,
     minWidth: 150,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 10,
     borderWidth: 1,
     borderColor: OttoColors.borderSoft,
@@ -280,8 +296,8 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 8,
     backgroundColor: OttoColors.borderSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   summaryCopy: {
     flex: 1,
@@ -292,8 +308,8 @@ const styles = StyleSheet.create({
     color: OttoColors.textSoft,
   },
   summaryValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   summaryValue: {
@@ -302,11 +318,11 @@ const styles = StyleSheet.create({
   },
   emptyState: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
     maxWidth: 250,
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingVertical: 32,
   },
   emptyLogo: {
@@ -316,17 +332,17 @@ const styles = StyleSheet.create({
   },
   emptyCopy: {
     gap: 4,
-    alignItems: 'center',
+    alignItems: "center",
   },
   emptyTitle: {
     ...OttoTypography.bodySmall,
     color: OttoColors.text,
-    textAlign: 'center',
+    textAlign: "center",
     fontFamily: OttoFonts.semiBold,
   },
   emptySubtitle: {
     ...OttoTypography.caption,
     color: OttoColors.textSoft,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

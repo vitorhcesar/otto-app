@@ -1,4 +1,5 @@
 import { BlurView } from "expo-blur";
+import { GlassView, isLiquidGlassAvailable } from "expo-glass-effect";
 import { useId, useState, type ReactNode } from "react";
 import {
   Platform,
@@ -13,32 +14,24 @@ import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { useBlurTarget } from "@/presentation/blur/blur-target-context";
 
 /**
- * Tokens from Figma Otto Entregas — AI Assistant Launcher / Bottom Navigation.
- * Print 1: layout + fill. Print 2: Glass effect.
+ * Figma 111:8278 / 111:8279 — Gradient/Navigation Bar Background + Glass.
+ *
+ * Fill: 17.857% rgba(18,19,17,0.15) → 154.46% rgba(56,122,22,0.15)
+ * Glass: frost 35. Sem Stroke no Figma — o filete é a refração do Glass
+ * (amostrada no PNG: topo ~rgba(255,255,255,0.28), base ~rgba(214,232,196,0.40)).
  */
 const FigmaNavGlass = {
   radius: 40,
   paddingX: 24,
   paddingY: 12,
-  fillFrom: "#121311",
-  fillTo: "#387A16",
-  fillOpacity: 0.15,
-  glass: {
-    lightAngle: -149,
-    lightIntensity: 0.8,
-    refraction: 100,
-    depth: 81,
-    dispersion: 42,
-    frost: 35,
-    splay: 100,
-  },
+  frost: 35,
+  rimWidth: 1,
 } as const;
 
 type GlassSurfaceProps = {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   contentStyle?: StyleProp<ViewStyle>;
-  /** Icon-only circle (perfil) — sem padding 24/12 do Figma */
   padded?: boolean;
 };
 
@@ -49,6 +42,7 @@ export function GlassSurface({
   padded = true,
 }: GlassSurfaceProps) {
   const blurTarget = useBlurTarget();
+  const useLiquidGlass = isLiquidGlassAvailable();
   const canBlurAndroid = Platform.OS === "android" && blurTarget != null;
   const [size, setSize] = useState({ width: 0, height: 0 });
 
@@ -59,34 +53,43 @@ export function GlassSurface({
     }
   };
 
+  const shape: StyleProp<ViewStyle> = [
+    StyleSheet.absoluteFill,
+    styles.glassShape,
+  ];
+
   return (
     <View style={[styles.base, style]} onLayout={onLayout}>
-      {canBlurAndroid ? (
+      {useLiquidGlass ? (
+        <GlassView
+          pointerEvents="none"
+          style={shape}
+          glassEffectStyle="clear"
+          colorScheme="dark"
+        />
+      ) : canBlurAndroid ? (
         <BlurView
           pointerEvents="none"
           blurTarget={blurTarget}
           blurMethod="dimezisBlurView"
           blurReductionFactor={1}
-          intensity={FigmaNavGlass.glass.frost}
+          intensity={FigmaNavGlass.frost}
           tint="dark"
-          style={StyleSheet.absoluteFill}
+          style={shape}
         />
       ) : Platform.OS === "ios" ? (
         <BlurView
           pointerEvents="none"
-          intensity={FigmaNavGlass.glass.frost}
+          intensity={FigmaNavGlass.frost}
           tint="dark"
-          style={StyleSheet.absoluteFill}
+          style={shape}
         />
       ) : (
-        <View
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, styles.fallback]}
-        />
+        <View pointerEvents="none" style={[shape, styles.fallback]} />
       )}
 
       {size.width > 0 ? (
-        <FigmaGlassLayers width={size.width} height={size.height} />
+        <FigmaGlassChrome width={size.width} height={size.height} />
       ) : null}
 
       <View
@@ -98,23 +101,13 @@ export function GlassSurface({
   );
 }
 
-function FigmaGlassLayers({
-  width,
-  height,
-}: {
-  width: number;
-  height: number;
-}) {
-  const rawId = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const fillId = `fill${rawId}`;
-  const rimId = `rim${rawId}`;
-  const specId = `spec${rawId}`;
-  const depthId = `depth${rawId}`;
-
+function FigmaGlassChrome({ width, height }: { width: number; height: number }) {
+  const uid = useId().replace(/[^a-zA-Z0-9]/g, "");
+  const fillId = `fill${uid}`;
+  const rimId = `rim${uid}`;
   const radius = Math.min(FigmaNavGlass.radius, height / 2);
-  const inset = 1.2;
-  const light = FigmaNavGlass.glass.lightIntensity;
-  const depthAlpha = (FigmaNavGlass.glass.depth / 100) * 0.28;
+  const stroke = FigmaNavGlass.rimWidth;
+  const inset = stroke / 2;
 
   return (
     <Svg
@@ -124,27 +117,18 @@ function FigmaGlassLayers({
       style={StyleSheet.absoluteFill}
     >
       <Defs>
-        <LinearGradient id={fillId} x1="0" y1="0" x2="0" y2="1">
-          <Stop offset="0" stopColor={FigmaNavGlass.fillFrom} />
-          <Stop offset="1" stopColor={FigmaNavGlass.fillTo} />
+        <LinearGradient id={fillId} x1="0" y1="0.17857" x2="0" y2="1.5446">
+          <Stop offset="0" stopColor="rgb(18,19,17)" stopOpacity={0.15} />
+          <Stop offset="1" stopColor="rgb(56,122,22)" stopOpacity={0.15} />
         </LinearGradient>
-        {/* Luz −149°: highlight no topo-esquerdo */}
-        <LinearGradient id={specId} x1="0.12" y1="0" x2="0.88" y2="1">
-          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={light * 0.42} />
-          <Stop offset="0.28" stopColor="#FFFFFF" stopOpacity={light * 0.1} />
-          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
-        </LinearGradient>
-        <LinearGradient id={rimId} x1="0" y1="0" x2="1" y2="1">
-          <Stop offset="0" stopColor="#FFFFFF" stopOpacity={light * 0.55} />
-          <Stop offset="0.38" stopColor="#FFFFFF" stopOpacity={light * 0.16} />
-          <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0.04} />
-        </LinearGradient>
-        <LinearGradient id={depthId} x1="0.5" y1="0.35" x2="0.5" y2="1">
-          <Stop offset="0" stopColor="#000000" stopOpacity={0} />
-          <Stop offset="1" stopColor="#000000" stopOpacity={depthAlpha} />
+        <LinearGradient id={rimId} x1="0" y1="0" x2="0" y2="1">
+          <Stop offset="0" stopColor="rgb(255,255,255)" stopOpacity={0.28} />
+          <Stop offset="0.18" stopColor="rgb(232,237,228)" stopOpacity={0.08} />
+          <Stop offset="0.5" stopColor="rgb(212,224,204)" stopOpacity={0.14} />
+          <Stop offset="0.82" stopColor="rgb(212,232,200)" stopOpacity={0.1} />
+          <Stop offset="1" stopColor="rgb(214,232,196)" stopOpacity={0.4} />
         </LinearGradient>
       </Defs>
-
       <Rect
         x={0}
         y={0}
@@ -152,33 +136,16 @@ function FigmaGlassLayers({
         height={height}
         rx={radius}
         fill={`url(#${fillId})`}
-        opacity={FigmaNavGlass.fillOpacity}
-      />
-      <Rect
-        x={0}
-        y={0}
-        width={width}
-        height={height}
-        rx={radius}
-        fill={`url(#${depthId})`}
-      />
-      <Rect
-        x={0}
-        y={0}
-        width={width}
-        height={height}
-        rx={radius}
-        fill={`url(#${specId})`}
       />
       <Rect
         x={inset}
         y={inset}
-        width={Math.max(0, width - inset * 2)}
-        height={Math.max(0, height - inset * 2)}
+        width={width - stroke}
+        height={height - stroke}
         rx={Math.max(0, radius - inset)}
         fill="none"
         stroke={`url(#${rimId})`}
-        strokeWidth={1.25}
+        strokeWidth={stroke}
       />
     </Svg>
   );
@@ -190,13 +157,15 @@ const styles = StyleSheet.create({
     borderRadius: FigmaNavGlass.radius,
     backgroundColor: "transparent",
   },
+  glassShape: {
+    borderRadius: FigmaNavGlass.radius,
+  },
   fallback: {
-    backgroundColor: "rgba(18,19,17,0.72)",
+    backgroundColor: "rgba(13,17,11,0.82)",
   },
   content: {
     position: "relative",
     zIndex: 1,
-    overflow: "hidden",
   },
   padded: {
     paddingHorizontal: FigmaNavGlass.paddingX,

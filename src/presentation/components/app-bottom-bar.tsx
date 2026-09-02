@@ -2,10 +2,7 @@ import { Image } from "expo-image";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import {
-  ActiveTabGlow,
-  AiBarGlow,
-} from "@/presentation/components/ui/active-tab-glow";
+import { ActiveTabGlow } from "@/presentation/components/ui/active-tab-glow";
 import {
   AiAskGlyph,
   HomeTabGlyph,
@@ -37,9 +34,15 @@ export function AppBottomBar({
 
   return (
     <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 8) }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Pergunte ao Otto IA">
-        <GlassSurface contentStyle={styles.aiBarContent}>
-          <AiBarGlow style={styles.aiGlowInBar} />
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Pergunte ao Otto IA"
+      >
+        <GlassSurface
+          padded={false}
+          style={styles.aiBar}
+          contentStyle={styles.aiBarContent}
+        >
           <Text style={styles.aiPlaceholder}>Pergunte ao Otto IA</Text>
           <View style={styles.aiIconWrap}>
             <AiAskGlyph size={24} color={ACTIVE_ICON} />
@@ -49,6 +52,7 @@ export function AppBottomBar({
 
       <View style={styles.navRow}>
         <GlassSurface
+          padded={false}
           style={styles.navPill}
           contentStyle={styles.navPillContent}
         >
@@ -56,6 +60,7 @@ export function AppBottomBar({
             accessibilityRole="tab"
             accessibilityLabel="Home"
             accessibilityState={{ selected: activeTab === "home" }}
+            hitSlop={10}
             onPress={() => onTabPress("home")}
             style={styles.navItem}
           >
@@ -70,6 +75,7 @@ export function AppBottomBar({
             accessibilityRole="tab"
             accessibilityLabel="Atividades"
             accessibilityState={{ selected: activeTab === "activities" }}
+            hitSlop={10}
             onPress={() => onTabPress("activities")}
             style={styles.navItem}
           >
@@ -84,6 +90,7 @@ export function AppBottomBar({
             accessibilityRole="tab"
             accessibilityLabel="Comunidade"
             accessibilityState={{ selected: activeTab === "community" }}
+            hitSlop={10}
             onPress={() => onTabPress("community")}
             style={styles.communityItem}
           >
@@ -143,17 +150,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     width: "100%",
   },
+  aiBar: {
+    height: 48,
+    width: "100%",
+  },
   aiBarContent: {
+    height: 48,
+    paddingHorizontal: 24,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  aiGlowInBar: {
-    bottom: -20,
-    zIndex: 0,
-  },
   aiPlaceholder: {
     ...OttoTypography.bodySmall,
+    lineHeight: 22.4,
     color: OttoColors.textMid,
     zIndex: 1,
   },
@@ -172,22 +182,23 @@ const styles = StyleSheet.create({
   },
   navPill: {
     flex: 1,
+    height: 56,
   },
   navPillContent: {
+    height: 56,
+    paddingHorizontal: 24,
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     justifyContent: "space-between",
   },
   navItem: {
     width: 24,
-    height: 32,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
   },
   communityItem: {
     width: 34,
-    height: 32,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
@@ -202,7 +213,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     overflow: "hidden",
-    borderWidth: StyleSheet.hairlineWidth,
+    borderWidth: 0.25,
     borderColor: OttoColors.borderSoft,
     position: "absolute",
     backgroundColor: OttoColors.surface,
