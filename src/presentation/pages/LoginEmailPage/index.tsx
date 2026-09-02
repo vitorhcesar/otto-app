@@ -32,7 +32,7 @@ import { useApiService } from '@/presentation/hooks/use-api-service';
 export function LoginEmailPage() {
   const router = useRouter();
   const api = useApiService();
-  const { setMethod, setEmail, setPhone } = useAuthDraft();
+  const { setMethod, setEmail, setPhone, setOtpDevHint } = useAuthDraft();
   const [method, setMethodLocal] = useState<AuthMethod>('email');
   const [email, setEmailLocal] = useState('');
   const [phone, setPhoneLocal] = useState('');
@@ -75,10 +75,11 @@ export function LoginEmailPage() {
       }
 
       const phoneDigits = getPhoneDigits(phone);
-      await api.modules.auth.sendOtp(phoneDigits);
+      const otp = await api.modules.auth.sendOtp(phoneDigits);
       setMethod('whatsapp');
       setPhone(phoneDigits);
       setEmail('');
+      setOtpDevHint(otp.devHint ?? '');
 
       router.push({
         pathname: '/login-email-code',

@@ -34,7 +34,8 @@ const CODE_LENGTH = 6;
 export function LoginEmailCodePage() {
   const router = useRouter();
   const api = useApiService();
-  const { setVerificationToken, setPhone, setEmail, setMethod, draft } = useAuthDraft();
+  const { setVerificationToken, setPhone, setEmail, setMethod, setOtpDevHint, draft } =
+    useAuthDraft();
   const params = useLocalSearchParams<{
     email?: string;
     phone?: string;
@@ -82,8 +83,9 @@ export function LoginEmailCodePage() {
 
     setResending(true);
     try {
-      await api.modules.auth.sendOtp(phone);
-      setSecondsLeft(RESEND_SECONDS);
+      const otp = await api.modules.auth.sendOtp(phone);
+      setOtpDevHint(otp.devHint ?? '');
+      setSecondsLeft(otp.resendCooldown || RESEND_SECONDS);
       setError(undefined);
       setCode('');
     } catch (err) {
@@ -159,7 +161,11 @@ export function LoginEmailCodePage() {
                 <Text style={styles.title}>Código do WhatsApp!</Text>
                 <Text style={styles.subtitle}>Enviamos um código de 6 dígitos para:</Text>
                 <Text style={styles.phone}>{phoneDisplay || '—'}</Text>
-                <Text style={styles.devHint}>Em desenvolvimento use o código 000000</Text>
+                {draft.otpDevHint ? (
+                  <Text style={styles.devHint}>
+                    Em desenvolvimento use o código {draft.otpDevHint}
+                  </Text>
+                ) : null}
               </View>
 
               <OtpField

@@ -34,7 +34,7 @@ function getUsernameFromEmail(email?: string) {
 export function LoginEmailWhatsAppPage() {
   const router = useRouter();
   const api = useApiService();
-  const { setEmail, setPhone, setMethod } = useAuthDraft();
+  const { setEmail, setPhone, setMethod, setOtpDevHint } = useAuthDraft();
   const { email: emailParam } = useLocalSearchParams<{
     email?: string;
     method?: string;
@@ -55,10 +55,11 @@ export function LoginEmailWhatsAppPage() {
     const phoneDigits = getPhoneDigits(phone);
     setLoading(true);
     try {
-      await api.modules.auth.sendOtp(phoneDigits);
+      const otp = await api.modules.auth.sendOtp(phoneDigits);
       setMethod('email');
       setEmail(email);
       setPhone(phoneDigits);
+      setOtpDevHint(otp.devHint ?? '');
 
       router.push({
         pathname: '/login-email-code',

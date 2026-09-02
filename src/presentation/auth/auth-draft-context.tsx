@@ -15,6 +15,7 @@ export type AuthDraft = {
   phone: string;
   password: string;
   verificationToken: string;
+  otpDevHint: string;
 };
 
 type AuthDraftContextValue = {
@@ -24,6 +25,7 @@ type AuthDraftContextValue = {
   setPhone: (phone: string) => void;
   setPassword: (password: string) => void;
   setVerificationToken: (token: string) => void;
+  setOtpDevHint: (hint: string) => void;
   resetDraft: () => void;
 };
 
@@ -33,6 +35,7 @@ const INITIAL_DRAFT: AuthDraft = {
   phone: '',
   password: '',
   verificationToken: '',
+  otpDevHint: '',
 };
 
 const AuthDraftContext = createContext<AuthDraftContextValue | null>(null);
@@ -60,6 +63,10 @@ export function AuthDraftProvider({ children }: { children: ReactNode }) {
     setDraft((current) => ({ ...current, verificationToken }));
   }, []);
 
+  const setOtpDevHint = useCallback((otpDevHint: string) => {
+    setDraft((current) => ({ ...current, otpDevHint }));
+  }, []);
+
   const resetDraft = useCallback(() => {
     setDraft(INITIAL_DRAFT);
   }, []);
@@ -72,9 +79,19 @@ export function AuthDraftProvider({ children }: { children: ReactNode }) {
       setPhone,
       setPassword,
       setVerificationToken,
+      setOtpDevHint,
       resetDraft,
     }),
-    [draft, setMethod, setEmail, setPhone, setPassword, setVerificationToken, resetDraft],
+    [
+      draft,
+      setMethod,
+      setEmail,
+      setPhone,
+      setPassword,
+      setVerificationToken,
+      setOtpDevHint,
+      resetDraft,
+    ],
   );
 
   return <AuthDraftContext.Provider value={value}>{children}</AuthDraftContext.Provider>;
