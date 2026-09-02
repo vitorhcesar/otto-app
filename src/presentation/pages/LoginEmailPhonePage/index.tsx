@@ -31,7 +31,7 @@ function getUsernameFromEmail(email?: string) {
   return localPart || 'usuário';
 }
 
-export function LoginEmailWhatsAppPage() {
+export function LoginEmailPhonePage() {
   const router = useRouter();
   const api = useApiService();
   const { setEmail, setPhone, setMethod, setOtpDevHint } = useAuthDraft();
@@ -103,7 +103,7 @@ export function LoginEmailWhatsAppPage() {
             <View style={styles.form}>
               <View style={styles.headerCopy}>
                 <Text style={styles.title}>Boas-vindas, {username}!</Text>
-                <Text style={styles.subtitle}>Qual seu número de WhatsApp?</Text>
+                <Text style={styles.subtitle}>Qual o seu número de telefone?</Text>
               </View>
 
               <PhoneField value={phone} onChangeText={setPhoneLocal} />

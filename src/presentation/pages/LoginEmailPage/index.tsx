@@ -20,7 +20,7 @@ import {
   AppleIcon,
   EmailIcon,
   GoogleIcon,
-  WhatsAppIcon,
+  PhoneIcon,
 } from '@/presentation/components/ui/brand-icons';
 import { Button } from '@/presentation/components/ui/button';
 import { ContentDivider } from '@/presentation/components/ui/content-divider';
@@ -65,7 +65,7 @@ export function LoginEmailPage() {
         }
 
         router.push({
-          pathname: '/login-email-whatsapp',
+          pathname: '/login-email-phone',
           params: {
             method: 'email',
             email: result.email,
@@ -76,7 +76,7 @@ export function LoginEmailPage() {
 
       const phoneDigits = getPhoneDigits(phone);
       const otp = await api.modules.auth.sendOtp(phoneDigits);
-      setMethod('whatsapp');
+      setMethod('phone');
       setPhone(phoneDigits);
       setEmail('');
       setOtpDevHint(otp.devHint ?? '');
@@ -84,7 +84,7 @@ export function LoginEmailPage() {
       router.push({
         pathname: '/login-email-code',
         params: {
-          method: 'whatsapp',
+          method: 'phone',
           email: '',
           phone: phoneDigits,
         },
@@ -117,7 +117,7 @@ export function LoginEmailPage() {
 
             <View style={styles.form}>
               <Text style={styles.title}>
-                {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu WhatsApp'}
+                {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu telefone'}
               </Text>
 
               {method === 'email' ? (
@@ -167,12 +167,12 @@ export function LoginEmailPage() {
               />
               {method === 'email' ? (
                 <Button
-                  label="Logar com seu WhatsApp"
+                  label="Logar com seu telefone"
                   variant="stroke"
-                  leftIcon={<WhatsAppIcon size={16} />}
+                  leftIcon={<PhoneIcon size={16} />}
                   onPress={() => {
-                    setMethodLocal('whatsapp');
-                    setMethod('whatsapp');
+                    setMethodLocal('phone');
+                    setMethod('phone');
                   }}
                 />
               ) : (

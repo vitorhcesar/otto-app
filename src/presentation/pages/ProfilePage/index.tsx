@@ -51,7 +51,7 @@ function maskCpf(value: string | null | undefined) {
   return `${digits.slice(0, 3)}.****.***-${digits.slice(-2)}`;
 }
 
-function formatWhatsAppDisplay(phone: string | null | undefined) {
+function formatPhoneDisplay(phone: string | null | undefined) {
   if (!phone) {
     return '—';
   }
@@ -79,7 +79,7 @@ export function ProfilePage() {
   const birthDate = formatBirthDateDisplay(profile?.birthDate);
   const cpf = maskCpf(profile?.cpf);
   const email = user?.email?.trim() || '—';
-  const whatsapp = formatWhatsAppDisplay(user?.phoneNumber);
+  const phone = formatPhoneDisplay(user?.phoneNumber);
   const phoneVerified = Boolean(user?.phoneNumberVerified);
   const emailVerified = Boolean(user?.email);
 
@@ -134,8 +134,8 @@ export function ProfilePage() {
               trailing={emailVerified ? verifiedBadge : undefined}
             />
             <TextField
-              label="WhatsApp"
-              value={whatsapp}
+              label="Telefone"
+              value={phone}
               editable={false}
               trailing={phoneVerified ? verifiedBadge : undefined}
             />

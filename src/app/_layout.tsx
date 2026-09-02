@@ -98,6 +98,7 @@ function RootNavigator() {
         <Stack.Protected guard={!isAuthenticated}>
           <Stack.Screen name="index" />
           <Stack.Screen name="login-email" />
+          <Stack.Screen name="login-email-phone" />
           <Stack.Screen name="login-email-whatsapp" />
           <Stack.Screen name="login-email-code" />
           <Stack.Screen name="login-email-profile" />

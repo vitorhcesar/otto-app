@@ -158,7 +158,7 @@ export function LoginEmailCodePage() {
 
             <View style={styles.form}>
               <View style={styles.headerCopy}>
-                <Text style={styles.title}>Código do WhatsApp!</Text>
+                <Text style={styles.title}>Código por SMS!</Text>
                 <Text style={styles.subtitle}>Enviamos um código de 6 dígitos para:</Text>
                 <Text style={styles.phone}>{phoneDisplay || '—'}</Text>
                 {draft.otpDevHint ? (

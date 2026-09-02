@@ -3,7 +3,7 @@ import { BaseApiModule } from '@/infra/http/services/api/modules/base-api.module
 export type EmailStartResponse = {
   email: string;
   exists: boolean;
-  nextStep: 'whatsapp' | 'login';
+  nextStep: 'phone' | 'login';
 };
 
 export type OtpSendResponse = {

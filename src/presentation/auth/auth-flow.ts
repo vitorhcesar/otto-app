@@ -1,4 +1,4 @@
-export type AuthMethod = 'email' | 'whatsapp';
+export type AuthMethod = 'email' | 'phone';
 
 export type AuthScreen = 'phone' | 'code' | 'profile' | 'data';
 
@@ -16,7 +16,7 @@ const EMAIL_STEPS: Record<AuthScreen, number> = {
   data: 4,
 };
 
-const WHATSAPP_STEPS: Record<Exclude<AuthScreen, 'phone'>, number> = {
+const PHONE_STEPS: Record<Exclude<AuthScreen, 'phone'>, number> = {
   code: 1,
   profile: 2,
   data: 3,
@@ -27,17 +27,17 @@ export function isValidEmail(value: string) {
 }
 
 export function parseAuthMethod(value: unknown): AuthMethod {
-  return value === 'whatsapp' ? 'whatsapp' : 'email';
+  return value === 'phone' || value === 'whatsapp' ? 'phone' : 'email';
 }
 
 export function getAuthStep(method: AuthMethod, screen: AuthScreen): AuthStep {
-  if (method === 'whatsapp') {
+  if (method === 'phone') {
     if (screen === 'phone') {
       return { current: 1, total: 4 };
     }
 
     return {
-      current: WHATSAPP_STEPS[screen],
+      current: PHONE_STEPS[screen],
       total: 4,
     };
   }
