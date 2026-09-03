@@ -78,6 +78,10 @@ function RootNavigator() {
             options={{ animation: 'slide_from_right' }}
           />
           <Stack.Screen
+            name="change-password-code"
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
             name="change-password"
             options={{ animation: 'slide_from_right' }}
           />

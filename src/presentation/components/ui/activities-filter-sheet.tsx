@@ -8,7 +8,10 @@ import {
   View,
 } from "react-native";
 
-import { ActivitiesCategoriesSheet } from "@/presentation/components/ui/activities-categories-sheet";
+import {
+  ActivitiesCategoriesHeader,
+  ActivitiesCategoriesSheet,
+} from "@/presentation/components/ui/activities-categories-sheet";
 import {
   FILTER_CATEGORY_CHIPS,
   getCategoryGroup,
@@ -311,14 +314,29 @@ export function ActivitiesFilterSheet({
   }
 
   return (
-    <>
       <Sheet
         visible={visible}
-        onClose={handleClose}
+        onClose={categoriesOpen ? () => setCategoriesOpen(false) : handleClose}
         onOpen={handleOpen}
-        title="Filtros"
+        title={categoriesOpen ? undefined : "Filtros"}
+        header={
+          categoriesOpen ? (
+            <ActivitiesCategoriesHeader
+              onClose={() => setCategoriesOpen(false)}
+            />
+          ) : undefined
+        }
+        showCloseButton={!categoriesOpen}
         contentStyle={[styles.sheet, { maxHeight: height * 0.92 }]}
       >
+      {categoriesOpen ? (
+        <ActivitiesCategoriesSheet
+          visible={categoriesOpen}
+          selected={draft.categories}
+          onClose={() => setCategoriesOpen(false)}
+          onToggle={toggleCategory}
+        />
+      ) : (
       <ScrollView
         style={[styles.scroll, { maxHeight: height * 0.92 - 88 }]}
         contentContainerStyle={styles.scrollContent}
@@ -467,14 +485,8 @@ export function ActivitiesFilterSheet({
           </Pressable>
         </View>
       </ScrollView>
+      )}
       </Sheet>
-      <ActivitiesCategoriesSheet
-        visible={visible && categoriesOpen}
-        selected={draft.categories}
-        onClose={() => setCategoriesOpen(false)}
-        onToggle={toggleCategory}
-      />
-    </>
   );
 }
 

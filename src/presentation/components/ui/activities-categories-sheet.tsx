@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -21,7 +21,6 @@ import {
 import { FilterCheckboxOnIcon } from "@/presentation/components/ui/activities-filter-icons";
 import { SearchIcon } from "@/presentation/components/ui/activities-icons";
 import { BackButton } from "@/presentation/components/ui/back-button";
-import { Sheet } from "@/presentation/components/ui/sheet";
 import {
   OttoColors,
   OttoFonts,
@@ -53,6 +52,16 @@ function matchesQuery(label: string, query: string) {
   return label.toLowerCase().includes(query);
 }
 
+export function ActivitiesCategoriesHeader({ onClose }: { onClose: () => void }) {
+  return (
+    <View style={styles.header}>
+      <BackButton onPress={onClose} />
+      <Text style={styles.title}>Categorias</Text>
+    </View>
+  );
+}
+
+/** Category picker body — rendered inside the filters Modal (iOS cannot stack Modals). */
 export function ActivitiesCategoriesSheet({
   visible,
   selected,
@@ -62,9 +71,11 @@ export function ActivitiesCategoriesSheet({
   const { height } = useWindowDimensions();
   const [query, setQuery] = useState("");
 
-  const handleOpen = useCallback(() => {
-    setQuery("");
-  }, []);
+  useEffect(() => {
+    if (visible) {
+      setQuery("");
+    }
+  }, [visible]);
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -94,20 +105,12 @@ export function ActivitiesCategoriesSheet({
 
   const selectedSet = useMemo(() => new Set(selected), [selected]);
 
+  if (!visible) {
+    return null;
+  }
+
   return (
-    <Sheet
-      visible={visible}
-      onClose={onClose}
-      onOpen={handleOpen}
-      showCloseButton={false}
-      header={
-        <View style={styles.header}>
-          <BackButton onPress={onClose} />
-          <Text style={styles.title}>Categorias</Text>
-        </View>
-      }
-      contentStyle={[styles.sheet, { maxHeight: height * 0.96 }]}
-    >
+    <View style={styles.panel}>
       <View style={styles.searchField}>
         <SearchIcon size={16} />
         <TextInput
@@ -122,7 +125,7 @@ export function ActivitiesCategoriesSheet({
       </View>
 
       <ScrollView
-        style={[styles.scroll, { maxHeight: height * 0.96 - 160 }]}
+        style={[styles.scroll, { maxHeight: height * 0.92 - 160 }]}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
@@ -137,7 +140,7 @@ export function ActivitiesCategoriesSheet({
           />
         ))}
       </ScrollView>
-    </Sheet>
+    </View>
   );
 }
 
@@ -197,15 +200,12 @@ function CategoryGroupBlock({
 }
 
 const styles = StyleSheet.create({
-  sheet: {
-    paddingHorizontal: 0,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
+  panel: {
     gap: 16,
+    marginHorizontal: -16,
   },
   header: {
     gap: 8,
-    paddingHorizontal: 16,
   },
   title: {
     ...OttoTypography.h1,

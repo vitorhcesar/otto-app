@@ -266,7 +266,7 @@ export function SettingsPage() {
             <NavRow
               label="Alterar senha"
               icon={<SettingsPasswordIcon size={16} />}
-              onPress={() => router.push('/change-password')}
+              onPress={() => router.push('/change-password-code')}
             />
             <NavRow
               label="Biometria"

@@ -29,9 +29,18 @@ export function getPhoneDigits(value: string) {
   return value.replace(/\D/g, '');
 }
 
+/** Local BR digits (DDD + number), stripping +55 when present. */
+export function toBrazilLocalDigits(value: string) {
+  let cleaned = getPhoneDigits(value);
+  if (cleaned.startsWith('55') && cleaned.length >= 12) {
+    cleaned = cleaned.slice(2);
+  }
+  return cleaned.slice(0, 11);
+}
+
 /** Display format matching Figma: (43) 98475-6308 */
 export function formatBrazilPhoneDisplay(digits: string) {
-  const cleaned = getPhoneDigits(digits).slice(0, 11);
+  const cleaned = toBrazilLocalDigits(digits);
 
   if (cleaned.length <= 2) {
     return cleaned;

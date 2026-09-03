@@ -115,7 +115,7 @@ export function LoginEmailCodePage() {
       if (result.phoneRegistered) {
         router.push({
           pathname: '/login-password',
-          params: { email },
+          params: { method: 'phone', phone: result.phone },
         });
         return;
       }

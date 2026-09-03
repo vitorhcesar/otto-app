@@ -6,6 +6,18 @@ export type EmailStartResponse = {
   nextStep: 'phone' | 'login';
 };
 
+export type PhoneStartResponse = {
+  phone: string;
+  exists: boolean;
+  nextStep: 'otp' | 'login';
+};
+
+export type LoginInput = {
+  email?: string;
+  phone?: string;
+  password: string;
+};
+
 export type OtpSendResponse = {
   phone: string;
   expiresIn: number;
@@ -68,17 +80,20 @@ export type RegisterInput = {
 
 export interface IAuthModule {
   startEmail(email: string): Promise<EmailStartResponse>;
+  startPhone(phone: string): Promise<PhoneStartResponse>;
   sendOtp(phone: string): Promise<OtpSendResponse>;
   verifyOtp(phone: string, code: string): Promise<OtpVerifyResponse>;
   register(input: RegisterInput): Promise<AuthResult>;
-  login(email: string, password: string): Promise<AuthResult>;
+  login(input: LoginInput): Promise<AuthResult>;
   logout(): Promise<void>;
   me(): Promise<MeResponse>;
   updateAvatar(avatarKey: string): Promise<MeResponse>;
   verifyPassword(password: string): Promise<{ ok: true }>;
+  sendPasswordOtp(): Promise<OtpSendResponse>;
+  verifyPasswordOtp(code: string): Promise<OtpVerifyResponse>;
   changePassword(input: {
     newPassword: string;
-    currentPassword?: string;
+    verificationToken: string;
   }): Promise<{ ok: true }>;
 }
 
@@ -87,6 +102,14 @@ export class AuthModule extends BaseApiModule implements IAuthModule {
     return this.http.post<EmailStartResponse>(
       '/api/v1/auth/email/start',
       { email },
+      { skipAuth: true },
+    );
+  }
+
+  startPhone(phone: string) {
+    return this.http.post<PhoneStartResponse>(
+      '/api/v1/auth/phone/start',
+      { phone },
       { skipAuth: true },
     );
   }
@@ -111,12 +134,8 @@ export class AuthModule extends BaseApiModule implements IAuthModule {
     return this.http.post<AuthResult>('/api/v1/auth/register', input, { skipAuth: true });
   }
 
-  login(email: string, password: string) {
-    return this.http.post<AuthResult>(
-      '/api/v1/auth/login',
-      { email, password },
-      { skipAuth: true },
-    );
+  login(input: LoginInput) {
+    return this.http.post<AuthResult>('/api/v1/auth/login', input, { skipAuth: true });
   }
 
   logout() {
@@ -137,7 +156,15 @@ export class AuthModule extends BaseApiModule implements IAuthModule {
     });
   }
 
-  changePassword(input: { newPassword: string; currentPassword?: string }) {
+  sendPasswordOtp() {
+    return this.http.post<OtpSendResponse>('/api/v1/auth/me/otp/send');
+  }
+
+  verifyPasswordOtp(code: string) {
+    return this.http.post<OtpVerifyResponse>('/api/v1/auth/me/otp/verify', { code });
+  }
+
+  changePassword(input: { newPassword: string; verificationToken: string }) {
     return this.http.patch<{ ok: true }>('/api/v1/auth/me/password', input);
   }
 }

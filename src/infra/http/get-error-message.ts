@@ -5,6 +5,10 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   OTP_EXPIRED: 'O código expirou. Solicite um novo SMS.',
   OTP_RESEND_COOLDOWN: 'Aguarde alguns segundos para reenviar o código.',
   OTP_SEND_FAILED: 'Não foi possível enviar o código por SMS. Tente novamente.',
+  OTP_TOKEN_INVALID: 'Não foi possível validar o código. Solicite um novo SMS.',
+  OTP_TOKEN_EXPIRED: 'O código expirou. Solicite um novo SMS.',
+  OTP_TOKEN_MISMATCH: 'O telefone não confere com a verificação.',
+  INVALID_CREDENTIALS: 'Credenciais inválidas. Confira os dados e tente novamente.',
   PHONE_INVALID: 'Número de telefone inválido.',
   PHONE_REQUIRED: 'Informe seu número de telefone.',
 };

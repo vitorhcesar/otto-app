@@ -59,7 +59,7 @@ export function LoginEmailPage() {
         if (result.nextStep === 'login') {
           router.push({
             pathname: '/login-password',
-            params: { email: result.email },
+            params: { method: 'email', email: result.email },
           });
           return;
         }
@@ -75,10 +75,20 @@ export function LoginEmailPage() {
       }
 
       const phoneDigits = getPhoneDigits(phone);
-      const otp = await api.modules.auth.sendOtp(phoneDigits);
+      const result = await api.modules.auth.startPhone(phoneDigits);
       setMethod('phone');
-      setPhone(phoneDigits);
+      setPhone(result.phone);
       setEmail('');
+
+      if (result.nextStep === 'login') {
+        router.push({
+          pathname: '/login-password',
+          params: { method: 'phone', phone: result.phone },
+        });
+        return;
+      }
+
+      const otp = await api.modules.auth.sendOtp(result.phone);
       setOtpDevHint(otp.devHint ?? '');
 
       router.push({
@@ -86,7 +96,7 @@ export function LoginEmailPage() {
         params: {
           method: 'phone',
           email: '',
-          phone: phoneDigits,
+          phone: result.phone,
         },
       });
     } catch (error) {

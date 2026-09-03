@@ -147,8 +147,10 @@ export function AppBottomBar({
 const styles = StyleSheet.create({
   wrap: {
     gap: 12,
-    paddingHorizontal: 16,
     width: "100%",
+    minWidth: 280,
+    maxWidth: 340,
+    alignSelf: "center",
   },
   aiBar: {
     height: 48,

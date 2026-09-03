@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -16,11 +16,13 @@ import { getErrorMessage } from '@/infra/http/get-error-message';
 import {
   isValidEmail,
   paramString,
+  parseAuthMethod,
 } from '@/presentation/auth/auth-flow';
 import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { Button } from '@/presentation/components/ui/button';
 import { PasswordField } from '@/presentation/components/ui/password-field';
+import { formatBrazilPhoneDisplay } from '@/presentation/components/ui/phone-field';
 import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 import { useApiService } from '@/presentation/hooks/use-api-service';
@@ -30,22 +32,37 @@ export function LoginPasswordPage() {
   const api = useApiService();
   const { applyAuthResult } = useAuthSession();
   const { draft, setEmail, resetDraft } = useAuthDraft();
-  const params = useLocalSearchParams<{ email?: string }>();
+  const params = useLocalSearchParams<{
+    email?: string;
+    phone?: string;
+    method?: string;
+  }>();
+  const method =
+    parseAuthMethod(params.method) === 'phone' || Boolean(paramString(params.phone))
+      ? 'phone'
+      : 'email';
   const emailParam = paramString(params.email) || draft.email;
+  const phone = paramString(params.phone) || (method === 'phone' ? draft.phone : '');
+  const phoneDisplay = useMemo(() => formatBrazilPhoneDisplay(phone), [phone]);
 
   const [email, setEmailLocal] = useState(emailParam);
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const submittingRef = useRef(false);
 
-  const canContinue = isValidEmail(email) && password.length >= 6;
+  const identifierReady = method === 'phone' ? phone.length >= 10 : isValidEmail(email);
+  const canContinue = identifierReady && password.length >= 6;
 
   async function submitLogin(nextEmail: string, nextPassword: string) {
-    if (
-      submittingRef.current ||
-      !isValidEmail(nextEmail) ||
-      nextPassword.length < 6
-    ) {
+    if (submittingRef.current || nextPassword.length < 6) {
+      return;
+    }
+
+    if (method === 'phone') {
+      if (phone.length < 10) {
+        return;
+      }
+    } else if (!isValidEmail(nextEmail)) {
       return;
     }
 
@@ -53,8 +70,9 @@ export function LoginPasswordPage() {
     setLoading(true);
     try {
       const result = await api.modules.auth.login(
-        nextEmail.trim(),
-        nextPassword,
+        method === 'phone'
+          ? { phone, password: nextPassword }
+          : { email: nextEmail.trim(), password: nextPassword },
       );
       await applyAuthResult(result);
       resetDraft();
@@ -89,7 +107,7 @@ export function LoginPasswordPage() {
   function handlePasswordChange(value: string) {
     const previous = password;
     setPassword(value);
-    if (looksLikeAutofill(previous, value) && isValidEmail(email)) {
+    if (looksLikeAutofill(previous, value) && identifierReady) {
       void submitLogin(email, value);
     }
   }
@@ -116,23 +134,38 @@ export function LoginPasswordPage() {
             <View style={styles.form}>
               <View style={styles.headerCopy}>
                 <Text style={styles.title}>Entrar na sua conta</Text>
-                <Text style={styles.subtitle}>Use seu e-mail e senha</Text>
+                <Text style={styles.subtitle}>
+                  {method === 'phone'
+                    ? 'Use seu telefone e senha'
+                    : 'Use seu e-mail e senha'}
+                </Text>
               </View>
 
               <View style={styles.fields}>
-                <TextField
-                  label="E-mail"
-                  placeholder="E-mail"
-                  value={email}
-                  onChangeText={handleEmailChange}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="username"
-                  textContentType="username"
-                  importantForAutofill="yes"
-                  returnKeyType="next"
-                />
+                {method === 'phone' ? (
+                  <TextField
+                    label="Telefone"
+                    placeholder="Telefone"
+                    value={phoneDisplay}
+                    editable={false}
+                    autoComplete="tel"
+                    textContentType="telephoneNumber"
+                  />
+                ) : (
+                  <TextField
+                    label="E-mail"
+                    placeholder="E-mail"
+                    value={email}
+                    onChangeText={handleEmailChange}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="username"
+                    textContentType="username"
+                    importantForAutofill="yes"
+                    returnKeyType="next"
+                  />
+                )}
                 <PasswordField
                   label="Senha"
                   placeholder="Senha"
