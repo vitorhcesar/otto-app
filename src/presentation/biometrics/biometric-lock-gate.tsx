@@ -186,7 +186,7 @@ export function BiometricLockGate({ children }: { children: ReactNode }) {
 
   return (
     <View style={styles.root}>
-      {children}
+      <View style={styles.app}>{children}</View>
       {cover ? <AppLockCover>{lockUi}</AppLockCover> : null}
     </View>
   );
@@ -195,13 +195,20 @@ export function BiometricLockGate({ children }: { children: ReactNode }) {
 /** iOS: native screens and Liquid Glass ignore sibling zIndex; attach to the window. */
 function AppLockCover({ children }: { children: ReactNode }) {
   const layer = (
-    <View style={styles.cover} pointerEvents="auto">
+    <View
+      style={Platform.OS === 'ios' ? styles.coverWindow : styles.coverHost}
+      pointerEvents="auto"
+    >
       {children}
     </View>
   );
 
   if (Platform.OS === 'ios') {
-    return <FullWindowOverlay>{layer}</FullWindowOverlay>;
+    return (
+      <View style={styles.overlayPortal} pointerEvents="box-none">
+        <FullWindowOverlay>{layer}</FullWindowOverlay>
+      </View>
+    );
   }
 
   return layer;
@@ -211,12 +218,20 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  cover: {
+  app: {
     flex: 1,
-    ...StyleSheet.absoluteFillObject,
+  },
+  overlayPortal: {
+    ...StyleSheet.absoluteFill,
+    pointerEvents: 'box-none',
+  },
+  coverWindow: {
+    flex: 1,
     backgroundColor: OttoColors.background,
-    zIndex: 9999,
-    elevation: 9999,
+  },
+  coverHost: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: OttoColors.background,
   },
   lockSafe: {
     flex: 1,

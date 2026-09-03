@@ -18,6 +18,7 @@ import {
   AuthSessionProvider,
   useAuthSession,
 } from '@/presentation/auth/auth-session-context';
+import { SessionTransitionProvider } from '@/presentation/auth/session-transition';
 import { BiometricLockGate } from '@/presentation/biometrics/biometric-lock-gate';
 import { AnimatedSplashOverlay } from '@/presentation/components/animated-icon';
 import { OttoColors } from '@/presentation/constants/theme';
@@ -55,8 +56,8 @@ function RootNavigator() {
         }}
       >
         <Stack.Protected guard={isAuthenticated}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="home" />
+          <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+          <Stack.Screen name="home" options={{ animation: 'none' }} />
           <Stack.Screen
             name="settings"
             options={{ animation: 'slide_from_right' }}
@@ -100,7 +101,7 @@ function RootNavigator() {
         </Stack.Protected>
 
         <Stack.Protected guard={!isAuthenticated}>
-          <Stack.Screen name="index" />
+          <Stack.Screen name="index" options={{ animation: 'none' }} />
           <Stack.Screen name="login-email" />
           <Stack.Screen name="login-email-phone" />
           <Stack.Screen name="login-email-whatsapp" />
@@ -129,11 +130,13 @@ export default function RootLayout() {
     <View style={styles.root}>
       <ThemeProvider value={OttoNavigationTheme}>
         <AuthDraftProvider>
-          <AuthSessionProvider>
-            <StatusBar style="light" />
-            <AnimatedSplashOverlay />
-            <RootNavigator />
-          </AuthSessionProvider>
+          <SessionTransitionProvider>
+            <AuthSessionProvider>
+              <StatusBar style="light" />
+              <AnimatedSplashOverlay />
+              <RootNavigator />
+            </AuthSessionProvider>
+          </SessionTransitionProvider>
         </AuthDraftProvider>
       </ThemeProvider>
     </View>

@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { router } from 'expo-router';
 
 import { clearSession, getSessionToken, saveSession } from '@/infra/auth/session-store';
 import type { AuthProfile, AuthResult, AuthUser } from '@/infra/http/services/api/modules/auth.module';
+import { useSessionTransition } from '@/presentation/auth/session-transition';
 import { useApiService } from '@/presentation/hooks/use-api-service';
 
 type AuthSessionContextValue = {
@@ -19,6 +21,7 @@ const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
 
 export function AuthSessionProvider({ children }: { children: ReactNode }) {
   const api = useApiService();
+  const { playEnter, playLeave } = useSessionTransition();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [profile, setProfile] = useState<AuthProfile | null>(null);
@@ -61,10 +64,13 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   }, [refreshSession]);
 
   const applyAuthResult = useCallback(async (result: AuthResult) => {
-    await saveSession(result.session);
-    setUser(result.user);
-    setProfile(result.profile);
-  }, []);
+    await playEnter(async () => {
+      await saveSession(result.session);
+      setUser(result.user);
+      setProfile(result.profile);
+      router.replace('/(tabs)/activities');
+    });
+  }, [playEnter]);
 
   const updateAvatar = useCallback(
     async (avatarKey: string) => {
@@ -76,22 +82,24 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   );
 
   const signOut = useCallback(async () => {
-    try {
-      // Não travar o UI se a API demorar/falhar — limpa sessão local no finally.
-      await Promise.race([
-        api.modules.auth.logout(),
-        new Promise<void>((resolve) => {
-          setTimeout(resolve, 2500);
-        }),
-      ]);
-    } catch {
+    const logoutRequest = api.modules.auth.logout().catch(() => {
       // ignore network errors on logout
-    } finally {
+    });
+
+    await playLeave(async () => {
       await clearSession();
       setUser(null);
       setProfile(null);
-    }
-  }, [api.modules.auth]);
+      router.replace('/');
+    });
+
+    void Promise.race([
+      logoutRequest,
+      new Promise<void>((resolve) => {
+        setTimeout(resolve, 2500);
+      }),
+    ]);
+  }, [api.modules.auth, playLeave]);
 
   const value = useMemo(
     () => ({

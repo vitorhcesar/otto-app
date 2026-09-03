@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import {
   Alert,
@@ -26,7 +26,6 @@ import { OttoColors } from '@/presentation/constants/theme';
 import { useApiService } from '@/presentation/hooks/use-api-service';
 
 export function LoginPasswordPage() {
-  const router = useRouter();
   const api = useApiService();
   const { applyAuthResult } = useAuthSession();
   const { draft, setEmail, resetDraft } = useAuthDraft();
@@ -73,7 +72,6 @@ export function LoginPasswordPage() {
       );
       await applyAuthResult(result);
       resetDraft();
-      router.replace('/(tabs)/activities');
     } catch (error) {
       Alert.alert(
         'Erro no login',

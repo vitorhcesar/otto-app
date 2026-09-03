@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -93,7 +93,6 @@ function isCompleteCpf(value: string) {
 }
 
 export function LoginEmailDataPage() {
-  const router = useRouter();
   const api = useApiService();
   const { applyAuthResult } = useAuthSession();
   const { draft, resetDraft } = useAuthDraft();
@@ -149,7 +148,6 @@ export function LoginEmailDataPage() {
       });
       await applyAuthResult(result);
       resetDraft();
-      router.replace("/(tabs)/activities");
     } catch (error) {
       Alert.alert(
         "Erro ao criar conta",
