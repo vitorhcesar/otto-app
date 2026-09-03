@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   Alert,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -11,6 +12,13 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, {
+  Easing,
+  FadeInLeft,
+  FadeInRight,
+  FadeOutLeft,
+  FadeOutRight,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { getErrorMessage } from '@/infra/http/get-error-message';
@@ -29,6 +37,37 @@ import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 import { useApiService } from '@/presentation/hooks/use-api-service';
 
+const SWITCH_DURATION = 280;
+const SWITCH_EXIT_DURATION = 220;
+const SWITCH_SLIDE = 18;
+const SWITCH_EASING = Easing.out(Easing.cubic);
+
+function enteringForMethod(method: AuthMethod) {
+  if (method === 'phone') {
+    return FadeInRight.duration(SWITCH_DURATION)
+      .easing(SWITCH_EASING)
+      .withInitialValues({
+        opacity: 0,
+        transform: [{ translateX: SWITCH_SLIDE }],
+      });
+  }
+
+  return FadeInLeft.duration(SWITCH_DURATION)
+    .easing(SWITCH_EASING)
+    .withInitialValues({
+      opacity: 0,
+      transform: [{ translateX: -SWITCH_SLIDE }],
+    });
+}
+
+function exitingForMethod(method: AuthMethod) {
+  if (method === 'phone') {
+    return FadeOutRight.duration(SWITCH_EXIT_DURATION).easing(SWITCH_EASING);
+  }
+
+  return FadeOutLeft.duration(SWITCH_EXIT_DURATION).easing(SWITCH_EASING);
+}
+
 export function LoginEmailPage() {
   const router = useRouter();
   const api = useApiService();
@@ -37,11 +76,23 @@ export function LoginEmailPage() {
   const [email, setEmailLocal] = useState('');
   const [phone, setPhoneLocal] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasSwitchedMethod, setHasSwitchedMethod] = useState(false);
 
   const canContinue =
     method === 'email'
       ? isValidEmail(email)
       : getPhoneDigits(phone).length >= 10;
+
+  function switchMethod(next: AuthMethod) {
+    if (next === method) {
+      return;
+    }
+
+    Keyboard.dismiss();
+    setHasSwitchedMethod(true);
+    setMethodLocal(next);
+    setMethod(next);
+  }
 
   async function handleContinue() {
     if (!canContinue || loading) {
@@ -126,26 +177,33 @@ export function LoginEmailPage() {
             />
 
             <View style={styles.form}>
-              <Text style={styles.title}>
-                {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu telefone'}
-              </Text>
+              <Animated.View
+                key={method}
+                entering={hasSwitchedMethod ? enteringForMethod(method) : undefined}
+                exiting={exitingForMethod(method)}
+                style={styles.switchingFields}
+              >
+                <Text style={styles.title}>
+                  {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu telefone'}
+                </Text>
 
-              {method === 'email' ? (
-                <TextField
-                  label="Seu melhor E-mail"
-                  placeholder="Seu melhor email"
-                  value={email}
-                  onChangeText={setEmailLocal}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  autoComplete="email"
-                  textContentType="emailAddress"
-                  returnKeyType="done"
-                />
-              ) : (
-                <PhoneField value={phone} onChangeText={setPhoneLocal} />
-              )}
+                {method === 'email' ? (
+                  <TextField
+                    label="Seu melhor E-mail"
+                    placeholder="Seu melhor email"
+                    value={email}
+                    onChangeText={setEmailLocal}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    autoComplete="email"
+                    textContentType="emailAddress"
+                    returnKeyType="done"
+                  />
+                ) : (
+                  <PhoneField value={phone} onChangeText={setPhoneLocal} />
+                )}
+              </Animated.View>
 
               <Button
                 label="Continuar"
@@ -175,27 +233,28 @@ export function LoginEmailPage() {
                   // Backend wiring comes later
                 }}
               />
-              {method === 'email' ? (
-                <Button
-                  label="Logar com seu telefone"
-                  variant="stroke"
-                  leftIcon={<PhoneIcon size={16} />}
-                  onPress={() => {
-                    setMethodLocal('phone');
-                    setMethod('phone');
-                  }}
-                />
-              ) : (
-                <Button
-                  label="Logar com seu E-mail"
-                  variant="stroke"
-                  leftIcon={<EmailIcon size={16} />}
-                  onPress={() => {
-                    setMethodLocal('email');
-                    setMethod('email');
-                  }}
-                />
-              )}
+              <Animated.View
+                key={method}
+                entering={hasSwitchedMethod ? enteringForMethod(method) : undefined}
+                exiting={exitingForMethod(method)}
+                style={styles.switchingAction}
+              >
+                {method === 'email' ? (
+                  <Button
+                    label="Logar com seu telefone"
+                    variant="stroke"
+                    leftIcon={<PhoneIcon size={16} />}
+                    onPress={() => switchMethod('phone')}
+                  />
+                ) : (
+                  <Button
+                    label="Logar com seu E-mail"
+                    variant="stroke"
+                    leftIcon={<EmailIcon size={16} />}
+                    onPress={() => switchMethod('email')}
+                  />
+                )}
+              </Animated.View>
             </View>
 
             <View style={styles.terms}>
@@ -246,6 +305,14 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     alignItems: 'center',
     gap: 24,
+  },
+  switchingFields: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    gap: 24,
+  },
+  switchingAction: {
+    alignSelf: 'stretch',
   },
   title: {
     ...OttoTypography.h3,
