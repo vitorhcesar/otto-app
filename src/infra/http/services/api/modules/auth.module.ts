@@ -4,12 +4,14 @@ export type EmailStartResponse = {
   email: string;
   exists: boolean;
   nextStep: 'phone' | 'login';
+  avatarKey: string | null;
 };
 
 export type PhoneStartResponse = {
   phone: string;
   exists: boolean;
   nextStep: 'otp' | 'login';
+  avatarKey: string | null;
 };
 
 export type LoginInput = {
@@ -29,6 +31,7 @@ export type OtpVerifyResponse = {
   phone: string;
   verificationToken: string;
   phoneRegistered: boolean;
+  avatarKey: string | null;
 };
 
 export type AuthProfile = {

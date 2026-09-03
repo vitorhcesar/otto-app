@@ -16,6 +16,7 @@ export type AuthDraft = {
   password: string;
   verificationToken: string;
   otpDevHint: string;
+  avatarKey: string;
 };
 
 type AuthDraftContextValue = {
@@ -26,6 +27,7 @@ type AuthDraftContextValue = {
   setPassword: (password: string) => void;
   setVerificationToken: (token: string) => void;
   setOtpDevHint: (hint: string) => void;
+  setAvatarKey: (avatarKey: string) => void;
   resetDraft: () => void;
 };
 
@@ -36,6 +38,7 @@ const INITIAL_DRAFT: AuthDraft = {
   password: '',
   verificationToken: '',
   otpDevHint: '',
+  avatarKey: '',
 };
 
 const AuthDraftContext = createContext<AuthDraftContextValue | null>(null);
@@ -67,6 +70,10 @@ export function AuthDraftProvider({ children }: { children: ReactNode }) {
     setDraft((current) => ({ ...current, otpDevHint }));
   }, []);
 
+  const setAvatarKey = useCallback((avatarKey: string) => {
+    setDraft((current) => ({ ...current, avatarKey }));
+  }, []);
+
   const resetDraft = useCallback(() => {
     setDraft(INITIAL_DRAFT);
   }, []);
@@ -80,6 +87,7 @@ export function AuthDraftProvider({ children }: { children: ReactNode }) {
       setPassword,
       setVerificationToken,
       setOtpDevHint,
+      setAvatarKey,
       resetDraft,
     }),
     [
@@ -90,6 +98,7 @@ export function AuthDraftProvider({ children }: { children: ReactNode }) {
       setPassword,
       setVerificationToken,
       setOtpDevHint,
+      setAvatarKey,
       resetDraft,
     ],
   );

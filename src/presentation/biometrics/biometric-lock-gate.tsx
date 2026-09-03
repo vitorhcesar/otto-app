@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AppState, StyleSheet, Text, View } from 'react-native';
+import { AppState, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { FullWindowOverlay } from 'react-native-screens';
 
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import {
@@ -145,51 +146,65 @@ export function BiometricLockGate({ children }: { children: ReactNode }) {
       <BiometricsFaceIcon size={32} color={OttoColors.textMid} />
     );
 
+  const lockUi =
+    gate === 'pending' ? (
+      <HomeLoading />
+    ) : (
+      <SafeAreaView style={styles.lockSafe} edges={['top', 'bottom']}>
+        <View style={styles.lockContent}>
+          <Image
+            source={require('@/assets/images/auth/logo.png')}
+            style={styles.logo}
+            contentFit="contain"
+            accessibilityLabel="Otto"
+          />
+          <View style={styles.iconWrap}>{icon}</View>
+          <View style={styles.copy}>
+            <Text style={styles.title}>Desbloquear Otto</Text>
+            <Text style={styles.subtitle}>
+              {capability
+                ? `Use ${capability.label} para entrar no app`
+                : 'Use a biometria para entrar no app'}
+            </Text>
+          </View>
+          <View style={styles.actions}>
+            <Button
+              label={`Usar ${capability?.label ?? 'biometria'}`}
+              variant="filled"
+              onPress={handleRetry}
+            />
+            <Button
+              label="Sair da conta"
+              variant="stroke"
+              loading={signingOut}
+              onPress={handleSignOut}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+
   return (
     <View style={styles.root}>
       {children}
-      {cover ? (
-        <View style={styles.cover} pointerEvents="auto">
-          {gate === 'pending' ? (
-            <HomeLoading />
-          ) : (
-            <SafeAreaView style={styles.lockSafe} edges={['top', 'bottom']}>
-              <View style={styles.lockContent}>
-                <Image
-                  source={require('@/assets/images/auth/logo.png')}
-                  style={styles.logo}
-                  contentFit="contain"
-                  accessibilityLabel="Otto"
-                />
-                <View style={styles.iconWrap}>{icon}</View>
-                <View style={styles.copy}>
-                  <Text style={styles.title}>Desbloquear Otto</Text>
-                  <Text style={styles.subtitle}>
-                    {capability
-                      ? `Use ${capability.label} para entrar no app`
-                      : 'Use a biometria para entrar no app'}
-                  </Text>
-                </View>
-                <View style={styles.actions}>
-                  <Button
-                    label={`Usar ${capability?.label ?? 'biometria'}`}
-                    variant="filled"
-                    onPress={handleRetry}
-                  />
-                  <Button
-                    label="Sair da conta"
-                    variant="stroke"
-                    loading={signingOut}
-                    onPress={handleSignOut}
-                  />
-                </View>
-              </View>
-            </SafeAreaView>
-          )}
-        </View>
-      ) : null}
+      {cover ? <AppLockCover>{lockUi}</AppLockCover> : null}
     </View>
   );
+}
+
+/** iOS: native screens and Liquid Glass ignore sibling zIndex; attach to the window. */
+function AppLockCover({ children }: { children: ReactNode }) {
+  const layer = (
+    <View style={styles.cover} pointerEvents="auto">
+      {children}
+    </View>
+  );
+
+  if (Platform.OS === 'ios') {
+    return <FullWindowOverlay>{layer}</FullWindowOverlay>;
+  }
+
+  return layer;
 }
 
 const styles = StyleSheet.create({
@@ -197,9 +212,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cover: {
+    flex: 1,
     ...StyleSheet.absoluteFillObject,
     backgroundColor: OttoColors.background,
-    zIndex: 50,
+    zIndex: 9999,
+    elevation: 9999,
   },
   lockSafe: {
     flex: 1,

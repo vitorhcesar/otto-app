@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   Alert,
   Keyboard,
@@ -12,24 +12,22 @@ import {
   Text,
   View,
 } from 'react-native';
-import Animated, {
-  Easing,
-  FadeInLeft,
-  FadeInRight,
-  FadeOutLeft,
-  FadeOutRight,
-} from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import Animated from 'react-native-reanimated';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { getErrorMessage } from '@/infra/http/get-error-message';
 import { type AuthMethod, isValidEmail } from '@/presentation/auth/auth-flow';
 import { useAuthDraft } from '@/presentation/auth/auth-draft-context';
+import { useAuthSession } from '@/presentation/auth/auth-session-context';
+import { authFadeIn, authFadeOut } from '@/presentation/auth/auth-switch-transition';
+import { ExistingAccountLogin } from '@/presentation/auth/existing-account-login';
 import {
   AppleIcon,
   EmailIcon,
   GoogleIcon,
   PhoneIcon,
 } from '@/presentation/components/ui/brand-icons';
+import { BackButton } from '@/presentation/components/ui/back-button';
 import { Button } from '@/presentation/components/ui/button';
 import { ContentDivider } from '@/presentation/components/ui/content-divider';
 import { getPhoneDigits, PhoneField } from '@/presentation/components/ui/phone-field';
@@ -37,46 +35,31 @@ import { TextField } from '@/presentation/components/ui/text-field';
 import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 import { useApiService } from '@/presentation/hooks/use-api-service';
 
-const SWITCH_DURATION = 280;
-const SWITCH_EXIT_DURATION = 220;
-const SWITCH_SLIDE = 18;
-const SWITCH_EASING = Easing.out(Easing.cubic);
-
-function enteringForMethod(method: AuthMethod) {
-  if (method === 'phone') {
-    return FadeInRight.duration(SWITCH_DURATION)
-      .easing(SWITCH_EASING)
-      .withInitialValues({
-        opacity: 0,
-        transform: [{ translateX: SWITCH_SLIDE }],
-      });
-  }
-
-  return FadeInLeft.duration(SWITCH_DURATION)
-    .easing(SWITCH_EASING)
-    .withInitialValues({
-      opacity: 0,
-      transform: [{ translateX: -SWITCH_SLIDE }],
-    });
-}
-
-function exitingForMethod(method: AuthMethod) {
-  if (method === 'phone') {
-    return FadeOutRight.duration(SWITCH_EXIT_DURATION).easing(SWITCH_EASING);
-  }
-
-  return FadeOutLeft.duration(SWITCH_EXIT_DURATION).easing(SWITCH_EASING);
-}
+type AuthPhase = 'identify' | 'password';
 
 export function LoginEmailPage() {
   const router = useRouter();
   const api = useApiService();
-  const { setMethod, setEmail, setPhone, setOtpDevHint } = useAuthDraft();
+  const { applyAuthResult } = useAuthSession();
+  const {
+    setMethod,
+    setEmail,
+    setPhone,
+    setOtpDevHint,
+    setAvatarKey,
+    resetDraft,
+  } = useAuthDraft();
   const [method, setMethodLocal] = useState<AuthMethod>('email');
+  const [phase, setPhase] = useState<AuthPhase>('identify');
   const [email, setEmailLocal] = useState('');
   const [phone, setPhoneLocal] = useState('');
+  const [password, setPassword] = useState('');
+  const [avatarKey, setAvatarKeyLocal] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasSwitchedMethod, setHasSwitchedMethod] = useState(false);
+  const [hasLeftIdentify, setHasLeftIdentify] = useState(false);
+  const submittingRef = useRef(false);
+  const insets = useSafeAreaInsets();
 
   const canContinue =
     method === 'email'
@@ -84,7 +67,7 @@ export function LoginEmailPage() {
       : getPhoneDigits(phone).length >= 10;
 
   function switchMethod(next: AuthMethod) {
-    if (next === method) {
+    if (next === method || phase !== 'identify') {
       return;
     }
 
@@ -92,6 +75,19 @@ export function LoginEmailPage() {
     setHasSwitchedMethod(true);
     setMethodLocal(next);
     setMethod(next);
+  }
+
+  function goToPassword(nextAvatarKey: string | null | undefined) {
+    Keyboard.dismiss();
+    setAvatarKeyLocal(nextAvatarKey ?? '');
+    setAvatarKey(nextAvatarKey ?? '');
+    setHasLeftIdentify(true);
+    setPhase('password');
+  }
+
+  function goBackToIdentify() {
+    setPassword('');
+    setPhase('identify');
   }
 
   async function handleContinue() {
@@ -106,12 +102,11 @@ export function LoginEmailPage() {
         const result = await api.modules.auth.startEmail(trimmed);
         setMethod('email');
         setEmail(result.email);
+        setEmailLocal(result.email);
 
         if (result.nextStep === 'login') {
-          router.push({
-            pathname: '/login-password',
-            params: { method: 'email', email: result.email },
-          });
+          setLoading(false);
+          goToPassword(result.avatarKey);
           return;
         }
 
@@ -130,12 +125,11 @@ export function LoginEmailPage() {
       setMethod('phone');
       setPhone(result.phone);
       setEmail('');
+      setEmailLocal('');
 
       if (result.nextStep === 'login') {
-        router.push({
-          pathname: '/login-password',
-          params: { method: 'phone', phone: result.phone },
-        });
+        setLoading(false);
+        goToPassword(result.avatarKey);
         return;
       }
 
@@ -157,8 +151,53 @@ export function LoginEmailPage() {
     }
   }
 
+  async function submitLogin(nextEmail: string, nextPassword: string) {
+    if (submittingRef.current || nextPassword.length < 6) {
+      return;
+    }
+
+    if (method === 'phone') {
+      if (getPhoneDigits(phone).length < 10 && phone.length < 10) {
+        return;
+      }
+    } else if (!isValidEmail(nextEmail)) {
+      return;
+    }
+
+    submittingRef.current = true;
+    setLoading(true);
+    try {
+      const result = await api.modules.auth.login(
+        method === 'phone'
+          ? { phone, password: nextPassword }
+          : { email: nextEmail.trim(), password: nextPassword },
+      );
+      await applyAuthResult(result);
+      resetDraft();
+      router.replace('/(tabs)/activities');
+    } catch (error) {
+      Alert.alert(
+        'Erro no login',
+        getErrorMessage(error, 'Não foi possível entrar. Tente novamente.'),
+      );
+    } finally {
+      submittingRef.current = false;
+      setLoading(false);
+    }
+  }
+
   return (
     <View style={styles.root}>
+      {phase === 'password' ? (
+        <Animated.View
+          entering={authFadeIn('left')}
+          exiting={authFadeOut('left')}
+          style={[styles.backWrap, { top: insets.top + 8, left: insets.left + 24 }]}
+        >
+          <BackButton onPress={goBackToIdentify} fallbackHref="/" />
+        </Animated.View>
+      ) : null}
+
       <SafeAreaView style={styles.safeArea}>
         <KeyboardAvoidingView
           style={styles.flex}
@@ -169,105 +208,137 @@ export function LoginEmailPage() {
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
           >
-            <Image
-              source={require('@/assets/images/auth/logo.png')}
-              style={styles.logo}
-              contentFit="contain"
-              accessibilityLabel="Otto"
-            />
-
-            <View style={styles.form}>
-              <Animated.View
-                key={method}
-                entering={hasSwitchedMethod ? enteringForMethod(method) : undefined}
-                exiting={exitingForMethod(method)}
-                style={styles.switchingFields}
-              >
-                <Text style={styles.title}>
-                  {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu telefone'}
-                </Text>
-
-                {method === 'email' ? (
-                  <TextField
-                    label="Seu melhor E-mail"
-                    placeholder="Seu melhor email"
-                    value={email}
-                    onChangeText={setEmailLocal}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    autoComplete="email"
-                    textContentType="emailAddress"
-                    returnKeyType="done"
+            <Animated.View
+              key={phase}
+              entering={
+                phase === 'identify' && !hasLeftIdentify
+                  ? undefined
+                  : authFadeIn(phase === 'password' ? 'right' : 'left')
+              }
+              exiting={authFadeOut(phase === 'password' ? 'right' : 'left')}
+              style={styles.scene}
+            >
+              {phase === 'password' ? (
+                <ExistingAccountLogin
+                  method={method}
+                  email={email}
+                  phone={phone}
+                  password={password}
+                  avatarKey={avatarKey}
+                  loading={loading}
+                  onEmailChange={(value) => {
+                    setEmailLocal(value);
+                    setEmail(value.trim());
+                  }}
+                  onPasswordChange={setPassword}
+                  onSubmit={(nextPassword) => {
+                    void submitLogin(email, nextPassword ?? password);
+                  }}
+                />
+              ) : (
+                <>
+                  <Image
+                    source={require('@/assets/images/auth/logo.png')}
+                    style={styles.logo}
+                    contentFit="contain"
+                    accessibilityLabel="Otto"
                   />
-                ) : (
-                  <PhoneField value={phone} onChangeText={setPhoneLocal} />
-                )}
-              </Animated.View>
 
-              <Button
-                label="Continuar"
-                variant="filled"
-                disabled={!canContinue}
-                loading={loading}
-                onPress={handleContinue}
-              />
-            </View>
+                  <View style={styles.form}>
+                    <Animated.View
+                      key={method}
+                      entering={hasSwitchedMethod ? authFadeIn(method === 'phone' ? 'right' : 'left') : undefined}
+                      exiting={authFadeOut(method === 'phone' ? 'right' : 'left')}
+                      style={styles.switchingFields}
+                    >
+                      <Text style={styles.title}>
+                        {method === 'email' ? 'Comece com seu E-mail' : 'Comece com seu telefone'}
+                      </Text>
 
-            <ContentDivider />
+                      {method === 'email' ? (
+                        <TextField
+                          label="Seu melhor E-mail"
+                          placeholder="Seu melhor email"
+                          value={email}
+                          onChangeText={setEmailLocal}
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          autoComplete="email"
+                          textContentType="emailAddress"
+                          returnKeyType="done"
+                        />
+                      ) : (
+                        <PhoneField value={phone} onChangeText={setPhoneLocal} />
+                      )}
+                    </Animated.View>
 
-            <View style={styles.socialActions}>
-              <Button
-                label="Continuar com Apple"
-                variant="stroke"
-                leftIcon={<AppleIcon size={16} />}
-                onPress={() => {
-                  // Backend wiring comes later
-                }}
-              />
-              <Button
-                label="Continuar com Google"
-                variant="stroke"
-                leftIcon={<GoogleIcon size={16} />}
-                onPress={() => {
-                  // Backend wiring comes later
-                }}
-              />
-              <Animated.View
-                key={method}
-                entering={hasSwitchedMethod ? enteringForMethod(method) : undefined}
-                exiting={exitingForMethod(method)}
-                style={styles.switchingAction}
-              >
-                {method === 'email' ? (
-                  <Button
-                    label="Logar com seu telefone"
-                    variant="stroke"
-                    leftIcon={<PhoneIcon size={16} />}
-                    onPress={() => switchMethod('phone')}
-                  />
-                ) : (
-                  <Button
-                    label="Logar com seu E-mail"
-                    variant="stroke"
-                    leftIcon={<EmailIcon size={16} />}
-                    onPress={() => switchMethod('email')}
-                  />
-                )}
-              </Animated.View>
-            </View>
+                    <Button
+                      label="Continuar"
+                      variant="filled"
+                      disabled={!canContinue}
+                      loading={loading}
+                      onPress={handleContinue}
+                    />
+                  </View>
 
-            <View style={styles.terms}>
-              <Text style={styles.termsText}>Ao continuar você concorda com os</Text>
-              <Pressable
-                accessibilityRole="link"
-                onPress={() => {
-                  // Terms link comes later
-                }}
-              >
-                <Text style={styles.termsLink}>Termos de uso</Text>
-              </Pressable>
-            </View>
+                  <ContentDivider />
+
+                  <View style={styles.socialActions}>
+                    <Button
+                      label="Continuar com Apple"
+                      variant="stroke"
+                      leftIcon={<AppleIcon size={16} />}
+                      onPress={() => {
+                        // Backend wiring comes later
+                      }}
+                    />
+                    <Button
+                      label="Continuar com Google"
+                      variant="stroke"
+                      leftIcon={<GoogleIcon size={16} />}
+                      onPress={() => {
+                        // Backend wiring comes later
+                      }}
+                    />
+                    <Animated.View
+                      key={method}
+                      entering={hasSwitchedMethod ? authFadeIn(method === 'phone' ? 'right' : 'left') : undefined}
+                      exiting={authFadeOut(method === 'phone' ? 'right' : 'left')}
+                      style={styles.switchingAction}
+                    >
+                      {method === 'email' ? (
+                        <Button
+                          label="Logar com seu telefone"
+                          variant="stroke"
+                          leftIcon={<PhoneIcon size={16} />}
+                          onPress={() => switchMethod('phone')}
+                        />
+                      ) : (
+                        <Button
+                          label="Logar com seu E-mail"
+                          variant="stroke"
+                          leftIcon={<EmailIcon size={16} />}
+                          onPress={() => switchMethod('email')}
+                        />
+                      )}
+                    </Animated.View>
+                  </View>
+
+                  <View style={styles.terms}>
+                    <Text style={styles.termsText}>Ao continuar você concorda com os</Text>
+                    <Pressable
+                      accessibilityRole="link"
+                      onPress={() => {
+                        // Terms link comes later
+                      }}
+                    >
+                      <Text style={styles.termsLink}>Termos de uso</Text>
+                    </Pressable>
+                  </View>
+                </>
+              )}
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -286,6 +357,12 @@ const styles = StyleSheet.create({
   flex: {
     flex: 1,
   },
+  backWrap: {
+    position: 'absolute',
+    top: 8,
+    left: 24,
+    zIndex: 2,
+  },
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
@@ -296,6 +373,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignSelf: 'center',
+  },
+  scene: {
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    gap: 32,
   },
   logo: {
     width: 57,
