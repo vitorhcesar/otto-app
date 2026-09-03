@@ -46,7 +46,8 @@
         {
           "faceIDPermission": "O Otto usa o Face ID para desbloquear o app e confirmar ações sensíveis."
         }
-      ]
+      ],
+      "./plugins/with-maven-central-workaround"
     ],
     "experiments": {
       "typedRoutes": true,
