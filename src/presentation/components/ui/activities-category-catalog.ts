@@ -343,6 +343,39 @@ export function getCategoryLabel(id: string): string | undefined {
   return LABEL_BY_ID.get(id);
 }
 
+export type CategoryDisplay = {
+  id: string;
+  label: string;
+  iconKey: string;
+  color: string;
+};
+
+export function getCategoryDisplay(id: string): CategoryDisplay | undefined {
+  const group = GROUP_BY_ID.get(id as CategoryGroupId);
+  if (group) {
+    return {
+      id: group.id,
+      label: group.label,
+      iconKey: group.parentIconKey,
+      color: group.color,
+    };
+  }
+
+  for (const itemGroup of CATEGORY_GROUPS) {
+    const item = itemGroup.children.find((child) => child.id === id);
+    if (item) {
+      return {
+        id: item.id,
+        label: item.label,
+        iconKey: item.iconKey,
+        color: itemGroup.color,
+      };
+    }
+  }
+
+  return undefined;
+}
+
 export function isFilterCategoryChip(id: string): id is CategoryGroupId {
   return (FILTER_CATEGORY_CHIPS as readonly string[]).includes(id);
 }

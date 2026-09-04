@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Modal,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,7 +12,7 @@ import {
 import Animated, {
   Easing,
   LinearTransition,
-  runOnJS,
+  runOnUI,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -25,6 +24,8 @@ import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
 const SHEET_RADIUS = 24;
 const ANIM_MS = 280;
+const OPEN_EASING = Easing.out(Easing.cubic);
+const CLOSE_EASING = Easing.in(Easing.cubic);
 
 export type SheetProps = {
   visible: boolean;
@@ -63,71 +64,73 @@ export function Sheet({
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const progress = useSharedValue(0);
-  const slideDistance = useSharedValue(windowHeight);
   const [mounted, setMounted] = useState(false);
-  const mountedRef = useRef(false);
-  const hasOpened = useRef(false);
+  const [layoutLive, setLayoutLive] = useState(false);
   const onOpenRef = useRef(onOpen);
-  onOpenRef.current = onOpen;
+  const didShowRef = useRef(false);
+  const mountedRef = useRef(false);
 
-  slideDistance.value = windowHeight;
-
-  const animateOpen = useCallback(() => {
-    if (hasOpened.current) {
-      return;
-    }
-    hasOpened.current = true;
-    progress.value = withTiming(1, {
-      duration: ANIM_MS,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [progress]);
+  useEffect(() => {
+    onOpenRef.current = onOpen;
+  }, [onOpen]);
 
   useEffect(() => {
     if (visible) {
-      hasOpened.current = false;
-      progress.value = 0;
+      const alreadyMounted = mountedRef.current;
+      didShowRef.current = true;
+      onOpenRef.current?.();
+      runOnUI(() => {
+        'worklet';
+        progress.value = 0;
+        if (alreadyMounted) {
+          progress.value = withTiming(1, {
+            duration: ANIM_MS,
+            easing: OPEN_EASING,
+          });
+        }
+      })();
       mountedRef.current = true;
       setMounted(true);
-      onOpenRef.current?.();
       return;
     }
 
-    if (!mountedRef.current) {
+    if (!didShowRef.current) {
       return;
     }
 
-    hasOpened.current = false;
-    progress.value = withTiming(
-      0,
-      { duration: ANIM_MS, easing: Easing.in(Easing.cubic) },
-      (finished) => {
-        if (finished) {
-          mountedRef.current = false;
-          runOnJS(setMounted)(false);
-        }
-      },
-    );
-  }, [visible, progress]);
+    didShowRef.current = false;
+    setLayoutLive(false);
+    runOnUI(() => {
+      'worklet';
+      progress.value = withTiming(0, {
+        duration: ANIM_MS,
+        easing: CLOSE_EASING,
+      });
+    })();
+    const timeout = setTimeout(() => {
+      mountedRef.current = false;
+      setMounted(false);
+    }, ANIM_MS);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `progress` is a stable SharedValue
+  }, [visible]);
 
   useEffect(() => {
-    if (!mounted || !visible) {
+    if (!mounted || !animateLayout) {
+      setLayoutLive(false);
       return;
     }
 
-    const timer = setTimeout(
-      animateOpen,
-      Platform.OS === 'web' ? 0 : 64,
-    );
-    return () => clearTimeout(timer);
-  }, [mounted, visible, animateOpen]);
+    const frame = requestAnimationFrame(() => setLayoutLive(true));
+    return () => cancelAnimationFrame(frame);
+  }, [mounted, animateLayout]);
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: progress.value * 0.55,
   }));
 
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (1 - progress.value) * slideDistance.value }],
+    transform: [{ translateY: (1 - progress.value) * windowHeight }],
   }));
 
   if (!mounted) {
@@ -144,7 +147,15 @@ export function Sheet({
       animationType="none"
       presentationStyle="overFullScreen"
       statusBarTranslucent
-      onShow={visible ? animateOpen : undefined}
+      onShow={() => {
+        runOnUI(() => {
+          'worklet';
+          progress.value = withTiming(1, {
+            duration: ANIM_MS,
+            easing: OPEN_EASING,
+          });
+        })();
+      }}
       onRequestClose={onClose}
     >
       <View style={styles.root} pointerEvents="box-none">
@@ -161,10 +172,8 @@ export function Sheet({
         <Animated.View style={[styles.sheetSlide, sheetStyle]}>
           <Animated.View
             layout={
-              animateLayout
-                ? LinearTransition.duration(ANIM_MS).easing(
-                    Easing.out(Easing.cubic),
-                  )
+              layoutLive
+                ? LinearTransition.duration(ANIM_MS).easing(OPEN_EASING)
                 : undefined
             }
             style={[
@@ -174,36 +183,36 @@ export function Sheet({
               animateLayout ? styles.layoutClip : null,
             ]}
           >
-          {showHeader ? (
-            <View style={styles.header}>
-              {header ? (
-                <View style={styles.headerMain}>{header}</View>
-              ) : hasDefaultHeader ? (
-                <View style={styles.headerMain}>
-                  {title ? <Text style={styles.title}>{title}</Text> : null}
-                  {subtitle ? (
-                    <Text style={styles.subtitle}>{subtitle}</Text>
-                  ) : null}
-                </View>
-              ) : (
-                <View style={styles.headerMain} />
-              )}
+            {showHeader ? (
+              <View style={styles.header}>
+                {header ? (
+                  <View style={styles.headerMain}>{header}</View>
+                ) : hasDefaultHeader ? (
+                  <View style={styles.headerMain}>
+                    {title ? <Text style={styles.title}>{title}</Text> : null}
+                    {subtitle ? (
+                      <Text style={styles.subtitle}>{subtitle}</Text>
+                    ) : null}
+                  </View>
+                ) : (
+                  <View style={styles.headerMain} />
+                )}
 
-              {showCloseButton ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Fechar"
-                  hitSlop={12}
-                  style={styles.closeButton}
-                  onPress={onClose}
-                >
-                  <CloseIcon size={20} color={closeIconColor} />
-                </Pressable>
-              ) : null}
-            </View>
-          ) : null}
+                {showCloseButton ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Fechar"
+                    hitSlop={12}
+                    style={styles.closeButton}
+                    onPress={onClose}
+                  >
+                    <CloseIcon size={20} color={closeIconColor} />
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
 
-          {children}
+            {children}
           </Animated.View>
         </Animated.View>
       </View>

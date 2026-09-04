@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getCategoryDisplay } from '@/presentation/components/ui/activities-category-catalog';
+import { CategoryChipIcon } from '@/presentation/components/ui/activities-category-icons';
 import {
   ExpenseArrowIcon,
   IncomeArrowIcon,
@@ -18,6 +20,7 @@ import {
 import { BackButton } from '@/presentation/components/ui/back-button';
 import { Button } from '@/presentation/components/ui/button';
 import { formatLongDate } from '@/presentation/components/ui/calendar';
+import { CategoryPickerSheet } from '@/presentation/components/ui/category-picker-sheet';
 import {
   DEFAULT_CURRENCY_CODE,
   getCurrencySymbol,
@@ -43,6 +46,9 @@ export function NewTransactionPage() {
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
   const [currencyCode, setCurrencyCode] = useState(DEFAULT_CURRENCY_CODE);
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categorySheetOpen, setCategorySheetOpen] = useState(false);
+  const category = categoryId ? getCategoryDisplay(categoryId) : undefined;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -123,20 +129,38 @@ export function NewTransactionPage() {
               />
             </View>
 
-            <View style={styles.categoryRow} accessibilityState={{ disabled: true }}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Selecionar categoria"
+              onPress={() => {
+                setCurrencyOpen(false);
+                setCategorySheetOpen(true);
+              }}
+              style={styles.categoryRow}
+            >
               <View style={styles.categoryLeft}>
                 <View style={styles.categoryIconWrap}>
-                  <TransactionPencilIcon size={24} />
+                  {category ? (
+                    <CategoryChipIcon
+                      iconKey={category.iconKey}
+                      color={category.color}
+                      size={24}
+                    />
+                  ) : (
+                    <TransactionPencilIcon size={24} />
+                  )}
                 </View>
                 <View style={styles.categoryCopy}>
                   <Text style={styles.categoryLabel}>Categoria</Text>
-                  <Text style={styles.categoryValue}>Selecionar</Text>
+                  <Text style={styles.categoryValue}>
+                    {category?.label ?? 'Selecionar'}
+                  </Text>
                 </View>
               </View>
               <View style={styles.categoryChevron}>
                 <TransactionChevronRightIcon size={24} />
               </View>
-            </View>
+            </Pressable>
           </ScrollView>
 
           <Button label="Adicionar transação" disabled />
@@ -148,6 +172,12 @@ export function NewTransactionPage() {
         value={transactionDate}
         onClose={() => setDateSheetOpen(false)}
         onSelect={setTransactionDate}
+      />
+      <CategoryPickerSheet
+        visible={categorySheetOpen}
+        selectedId={categoryId}
+        onClose={() => setCategorySheetOpen(false)}
+        onSelect={setCategoryId}
       />
     </SafeAreaView>
   );
