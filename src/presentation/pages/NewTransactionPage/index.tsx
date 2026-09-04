@@ -18,10 +18,14 @@ import {
 import { BackButton } from '@/presentation/components/ui/back-button';
 import { Button } from '@/presentation/components/ui/button';
 import { formatLongDate } from '@/presentation/components/ui/calendar';
+import {
+  DEFAULT_CURRENCY_CODE,
+  getCurrencySymbol,
+} from '@/presentation/components/ui/currencies';
+import { CurrencyPicker } from '@/presentation/components/ui/currency-picker';
 import { DatePickerSheet } from '@/presentation/components/ui/date-picker-sheet';
 import {
   TransactionCalendarIcon,
-  TransactionChevronDownIcon,
   TransactionChevronRightIcon,
   TransactionPencilIcon,
 } from '@/presentation/components/ui/new-transaction-icons';
@@ -37,6 +41,8 @@ export function NewTransactionPage() {
   const [name, setName] = useState('');
   const [transactionDate, setTransactionDate] = useState(() => new Date());
   const [dateSheetOpen, setDateSheetOpen] = useState(false);
+  const [currencyCode, setCurrencyCode] = useState(DEFAULT_CURRENCY_CODE);
+  const [currencyOpen, setCurrencyOpen] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -68,7 +74,9 @@ export function NewTransactionPage() {
             </View>
 
             <View style={styles.amountRow}>
-              <Text style={styles.amountText}>R$</Text>
+              <Text style={styles.amountText}>
+                {getCurrencySymbol(currencyCode)}
+              </Text>
               <Text style={styles.amountText}>00,00</Text>
             </View>
 
@@ -82,6 +90,7 @@ export function NewTransactionPage() {
                   placeholderTextColor={OttoColors.textSoft}
                   value={name}
                   onChangeText={setName}
+                  onFocus={() => setCurrencyOpen(false)}
                   autoCorrect={false}
                   autoCapitalize="sentences"
                   returnKeyType="done"
@@ -92,7 +101,10 @@ export function NewTransactionPage() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Selecionar data"
-                onPress={() => setDateSheetOpen(true)}
+                onPress={() => {
+                  setCurrencyOpen(false);
+                  setDateSheetOpen(true);
+                }}
                 style={styles.inputShell}
               >
                 <Text style={styles.inputValue}>
@@ -103,12 +115,12 @@ export function NewTransactionPage() {
                 </View>
               </Pressable>
 
-              <View style={styles.inputShell} accessibilityState={{ disabled: true }}>
-                <Text style={styles.inputValue}>BRL - Real Brasileiro</Text>
-                <View style={styles.trailingIcon}>
-                  <TransactionChevronDownIcon size={16} />
-                </View>
-              </View>
+              <CurrencyPicker
+                value={currencyCode}
+                open={currencyOpen}
+                onOpenChange={setCurrencyOpen}
+                onChange={setCurrencyCode}
+              />
             </View>
 
             <View style={styles.categoryRow} accessibilityState={{ disabled: true }}>
