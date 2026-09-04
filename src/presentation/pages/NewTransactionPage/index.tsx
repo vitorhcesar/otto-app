@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -16,6 +17,8 @@ import {
 } from '@/presentation/components/ui/activities-icons';
 import { BackButton } from '@/presentation/components/ui/back-button';
 import { Button } from '@/presentation/components/ui/button';
+import { formatLongDate } from '@/presentation/components/ui/calendar';
+import { DatePickerSheet } from '@/presentation/components/ui/date-picker-sheet';
 import {
   TransactionCalendarIcon,
   TransactionChevronDownIcon,
@@ -28,30 +31,12 @@ import {
   OttoTypography,
 } from '@/presentation/constants/theme';
 
-const MONTHS = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-] as const;
-
 const TAB_SELECTED_BG = '#212220';
-
-function formatLongDate(date: Date) {
-  return `${date.getDate()} de ${MONTHS[date.getMonth()]} de ${date.getFullYear()}`;
-}
 
 export function NewTransactionPage() {
   const [name, setName] = useState('');
-  const [transactionDate] = useState(() => formatLongDate(new Date()));
+  const [transactionDate, setTransactionDate] = useState(() => new Date());
+  const [dateSheetOpen, setDateSheetOpen] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
@@ -104,12 +89,19 @@ export function NewTransactionPage() {
                 />
               </View>
 
-              <View style={styles.inputShell} accessibilityState={{ disabled: true }}>
-                <Text style={styles.inputValue}>{transactionDate}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Selecionar data"
+                onPress={() => setDateSheetOpen(true)}
+                style={styles.inputShell}
+              >
+                <Text style={styles.inputValue}>
+                  {formatLongDate(transactionDate)}
+                </Text>
                 <View style={styles.trailingIcon}>
                   <TransactionCalendarIcon size={16} />
                 </View>
-              </View>
+              </Pressable>
 
               <View style={styles.inputShell} accessibilityState={{ disabled: true }}>
                 <Text style={styles.inputValue}>BRL - Real Brasileiro</Text>
@@ -138,6 +130,13 @@ export function NewTransactionPage() {
           <Button label="Adicionar transação" disabled />
         </View>
       </KeyboardAvoidingView>
+
+      <DatePickerSheet
+        visible={dateSheetOpen}
+        value={transactionDate}
+        onClose={() => setDateSheetOpen(false)}
+        onSelect={setTransactionDate}
+      />
     </SafeAreaView>
   );
 }

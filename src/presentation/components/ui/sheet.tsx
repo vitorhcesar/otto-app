@@ -1,9 +1,11 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   Modal,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
   type StyleProp,
   type ViewStyle,
@@ -23,7 +25,6 @@ import { OttoColors, OttoTypography } from '@/presentation/constants/theme';
 
 const SHEET_RADIUS = 24;
 const ANIM_MS = 280;
-const SLIDE_DISTANCE = 420;
 
 export type SheetProps = {
   visible: boolean;
@@ -60,37 +61,73 @@ export function Sheet({
   animateLayout = false,
 }: SheetProps) {
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const progress = useSharedValue(0);
-  const [mounted, setMounted] = useState(visible);
+  const slideDistance = useSharedValue(windowHeight);
+  const [mounted, setMounted] = useState(false);
+  const mountedRef = useRef(false);
+  const hasOpened = useRef(false);
+  const onOpenRef = useRef(onOpen);
+  onOpenRef.current = onOpen;
+
+  slideDistance.value = windowHeight;
+
+  const animateOpen = useCallback(() => {
+    if (hasOpened.current) {
+      return;
+    }
+    hasOpened.current = true;
+    progress.value = withTiming(1, {
+      duration: ANIM_MS,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [progress]);
 
   useEffect(() => {
     if (visible) {
+      hasOpened.current = false;
+      progress.value = 0;
+      mountedRef.current = true;
       setMounted(true);
-      onOpen?.();
-      progress.value = withTiming(1, {
-        duration: ANIM_MS,
-        easing: Easing.out(Easing.cubic),
-      });
+      onOpenRef.current?.();
       return;
     }
 
+    if (!mountedRef.current) {
+      return;
+    }
+
+    hasOpened.current = false;
     progress.value = withTiming(
       0,
       { duration: ANIM_MS, easing: Easing.in(Easing.cubic) },
       (finished) => {
         if (finished) {
+          mountedRef.current = false;
           runOnJS(setMounted)(false);
         }
       },
     );
-  }, [visible, onOpen, progress]);
+  }, [visible, progress]);
+
+  useEffect(() => {
+    if (!mounted || !visible) {
+      return;
+    }
+
+    const timer = setTimeout(
+      animateOpen,
+      Platform.OS === 'web' ? 0 : 64,
+    );
+    return () => clearTimeout(timer);
+  }, [mounted, visible, animateOpen]);
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: progress.value * 0.55,
   }));
 
   const sheetStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: (1 - progress.value) * SLIDE_DISTANCE }],
+    transform: [{ translateY: (1 - progress.value) * slideDistance.value }],
   }));
 
   if (!mounted) {
@@ -105,7 +142,9 @@ export function Sheet({
       visible={mounted}
       transparent
       animationType="none"
+      presentationStyle="overFullScreen"
       statusBarTranslucent
+      onShow={visible ? animateOpen : undefined}
       onRequestClose={onClose}
     >
       <View style={styles.root} pointerEvents="box-none">
