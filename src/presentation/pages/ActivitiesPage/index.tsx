@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Pressable,
@@ -82,6 +83,7 @@ function SummaryCard({
 }
 
 export function ActivitiesPage() {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterId>("Entradas");
   const [incomeVisible, setIncomeVisible] = useState(true);
@@ -105,7 +107,8 @@ export function ActivitiesPage() {
               <Pressable
                 style={styles.addButton}
                 accessibilityRole="button"
-                accessibilityLabel="Adicionar atividade"
+                accessibilityLabel="Nova transação"
+                onPress={() => router.push("/new-transaction")}
               >
                 <PlusIcon size={24} />
               </Pressable>

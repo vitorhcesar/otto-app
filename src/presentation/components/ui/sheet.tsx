@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import Animated, {
   Easing,
+  LinearTransition,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -39,6 +40,8 @@ export type SheetProps = {
   contentStyle?: StyleProp<ViewStyle>;
   /** Fires when the sheet begins opening */
   onOpen?: () => void;
+  /** Animate height/layout when the sheet content size changes */
+  animateLayout?: boolean;
 };
 
 /** Animated bottom sheet used across authenticated flows. */
@@ -54,6 +57,7 @@ export function Sheet({
   closeOnBackdropPress = true,
   contentStyle,
   onOpen,
+  animateLayout = false,
 }: SheetProps) {
   const insets = useSafeAreaInsets();
   const progress = useSharedValue(0);
@@ -115,14 +119,22 @@ export function Sheet({
           <Animated.View style={[styles.backdrop, backdropStyle]} />
         </Pressable>
 
-        <Animated.View
-          style={[
-            styles.sheet,
-            { paddingBottom: Math.max(insets.bottom, 16) + 8 },
-            contentStyle,
-            sheetStyle,
-          ]}
-        >
+        <Animated.View style={[styles.sheetSlide, sheetStyle]}>
+          <Animated.View
+            layout={
+              animateLayout
+                ? LinearTransition.duration(ANIM_MS).easing(
+                    Easing.out(Easing.cubic),
+                  )
+                : undefined
+            }
+            style={[
+              styles.sheet,
+              { paddingBottom: Math.max(insets.bottom, 16) + 8 },
+              contentStyle,
+              animateLayout ? styles.layoutClip : null,
+            ]}
+          >
           {showHeader ? (
             <View style={styles.header}>
               {header ? (
@@ -153,6 +165,7 @@ export function Sheet({
           ) : null}
 
           {children}
+          </Animated.View>
         </Animated.View>
       </View>
     </Modal>
@@ -168,6 +181,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFill,
     backgroundColor: '#000000',
   },
+  sheetSlide: {
+    backgroundColor: OttoColors.background,
+    borderTopLeftRadius: SHEET_RADIUS,
+    borderTopRightRadius: SHEET_RADIUS,
+    overflow: 'hidden',
+  },
   sheet: {
     backgroundColor: OttoColors.background,
     borderTopLeftRadius: SHEET_RADIUS,
@@ -175,6 +194,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 24,
     gap: 24,
+  },
+  layoutClip: {
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',

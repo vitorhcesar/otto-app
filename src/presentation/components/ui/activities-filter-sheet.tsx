@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Pressable,
   ScrollView,
@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import Animated, { Easing, FadeInLeft, FadeInRight } from "react-native-reanimated";
 
 import {
   ActivitiesCategoriesHeader,
@@ -187,10 +188,12 @@ export function ActivitiesFilterSheet({
   const { height } = useWindowDimensions();
   const [draft, setDraft] = useState<ActivitiesFilters>(value);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const didOpenCategories = useRef(false);
 
   const handleOpen = useCallback(() => {
     setDraft(value);
     setCategoriesOpen(false);
+    didOpenCategories.current = false;
   }, [value]);
 
   const categoryChips = useMemo(
@@ -224,7 +227,7 @@ export function ActivitiesFilterSheet({
     onClose();
   }
 
-  function toggleCategory(id: string) {
+  const toggleCategory = useCallback((id: string) => {
     setDraft((current) => {
       const selected = current.categories.includes(id);
       return {
@@ -234,7 +237,7 @@ export function ActivitiesFilterSheet({
           : [...current.categories, id],
       };
     });
-  }
+  }, []);
 
   const selectedChips = useMemo(() => {
     const chips: {
@@ -327,16 +330,36 @@ export function ActivitiesFilterSheet({
           ) : undefined
         }
         showCloseButton={!categoriesOpen}
-        contentStyle={[styles.sheet, { maxHeight: height * 0.92 }]}
+        animateLayout
+        contentStyle={[
+          styles.sheet,
+          categoriesOpen
+            ? { height: height * 0.92 }
+            : { maxHeight: height * 0.92 },
+        ]}
       >
       {categoriesOpen ? (
-        <ActivitiesCategoriesSheet
-          visible={categoriesOpen}
-          selected={draft.categories}
-          onClose={() => setCategoriesOpen(false)}
-          onToggle={toggleCategory}
-        />
+        <Animated.View
+          key="categories"
+          entering={FadeInRight.duration(280).easing(Easing.out(Easing.cubic))}
+          style={styles.categoriesBody}
+        >
+          <ActivitiesCategoriesSheet
+            visible={categoriesOpen}
+            selected={draft.categories}
+            onClose={() => setCategoriesOpen(false)}
+            onToggle={toggleCategory}
+          />
+        </Animated.View>
       ) : (
+      <Animated.View
+        key="filters"
+        entering={
+          didOpenCategories.current
+            ? FadeInLeft.duration(260).easing(Easing.out(Easing.cubic))
+            : undefined
+        }
+      >
       <ScrollView
         style={[styles.scroll, { maxHeight: height * 0.92 - 88 }]}
         contentContainerStyle={styles.scrollContent}
@@ -429,7 +452,10 @@ export function ActivitiesFilterSheet({
           </View>
           <Pressable
             accessibilityRole="button"
-            onPress={() => setCategoriesOpen(true)}
+            onPress={() => {
+              didOpenCategories.current = true;
+              setCategoriesOpen(true);
+            }}
             style={styles.ghostRow}
           >
             <Text style={styles.ghostLabel}>Mostrar mais</Text>
@@ -485,6 +511,7 @@ export function ActivitiesFilterSheet({
           </Pressable>
         </View>
       </ScrollView>
+      </Animated.View>
       )}
       </Sheet>
   );
@@ -495,6 +522,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
+  },
+  categoriesBody: {
+    flex: 1,
+    minHeight: 0,
   },
   scroll: {
     flexGrow: 0,
