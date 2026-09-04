@@ -15,6 +15,7 @@ type AuthSessionContextValue = {
   refreshSession: () => Promise<void>;
   updateAvatar: (avatarKey: string) => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
@@ -101,6 +102,17 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     ]);
   }, [api.modules.auth, playLeave]);
 
+  const deleteAccount = useCallback(async () => {
+    await api.modules.auth.deleteAccount();
+
+    await playLeave(async () => {
+      await clearSession();
+      setUser(null);
+      setProfile(null);
+      router.replace('/');
+    });
+  }, [api.modules.auth, playLeave]);
+
   const value = useMemo(
     () => ({
       isLoading,
@@ -111,8 +123,18 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       refreshSession,
       updateAvatar,
       signOut,
+      deleteAccount,
     }),
-    [isLoading, user, profile, applyAuthResult, refreshSession, updateAvatar, signOut],
+    [
+      isLoading,
+      user,
+      profile,
+      applyAuthResult,
+      refreshSession,
+      updateAvatar,
+      signOut,
+      deleteAccount,
+    ],
   );
 
   return <AuthSessionContext.Provider value={value}>{children}</AuthSessionContext.Provider>;

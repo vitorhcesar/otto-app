@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Alert,
   Pressable,
@@ -9,9 +9,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { getErrorMessage } from '@/infra/http/get-error-message';
 import { useAuthSession } from '@/presentation/auth/auth-session-context';
 import { ShieldCheckIcon } from '@/presentation/components/ui/auth-icons';
 import { BackButton } from '@/presentation/components/ui/back-button';
+import { DeleteAccountSheet } from '@/presentation/components/ui/delete-account-sheet';
 import {
   TrashIcon,
   VerifiedBadgeIcon,
@@ -72,7 +74,9 @@ function formatPhoneDisplay(phone: string | null | undefined) {
 }
 
 export function ProfilePage() {
-  const { profile, user } = useAuthSession();
+  const { profile, user, deleteAccount } = useAuthSession();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const fullName =
     profile?.fullName?.trim() || user?.name?.trim() || '—';
@@ -89,7 +93,27 @@ export function ProfilePage() {
   );
 
   function handleDeleteAccount() {
-    Alert.alert('Excluir conta', 'Em breve.');
+    setDeleteOpen(true);
+  }
+
+  async function confirmDeleteAccount() {
+    if (deleting) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await deleteAccount();
+    } catch (error) {
+      Alert.alert(
+        'Erro',
+        getErrorMessage(
+          error,
+          'Não foi possível excluir a conta. Tente novamente.',
+        ),
+      );
+      setDeleting(false);
+    }
   }
 
   return (
@@ -161,6 +185,19 @@ export function ProfilePage() {
           <TrashIcon size={16} color={OttoColors.textSoft} />
         </Pressable>
       </ScrollView>
+
+      <DeleteAccountSheet
+        visible={deleteOpen}
+        loading={deleting}
+        onClose={() => {
+          if (!deleting) {
+            setDeleteOpen(false);
+          }
+        }}
+        onConfirm={() => {
+          void confirmDeleteAccount();
+        }}
+      />
     </SafeAreaView>
   );
 }

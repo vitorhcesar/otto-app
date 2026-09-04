@@ -98,6 +98,7 @@ export interface IAuthModule {
     newPassword: string;
     verificationToken: string;
   }): Promise<{ ok: true }>;
+  deleteAccount(): Promise<void>;
 }
 
 export class AuthModule extends BaseApiModule implements IAuthModule {
@@ -169,5 +170,9 @@ export class AuthModule extends BaseApiModule implements IAuthModule {
 
   changePassword(input: { newPassword: string; verificationToken: string }) {
     return this.http.patch<{ ok: true }>('/api/v1/auth/me/password', input);
+  }
+
+  deleteAccount() {
+    return this.http.delete<void>('/api/v1/auth/me');
   }
 }
